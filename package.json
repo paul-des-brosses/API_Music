@@ -1,0 +1,27 @@
+{
+  "name": "festival-3d-music",
+  "version": "1.0.0",
+  "description": "3D Interactive Music Festival visualizer for Last.fm recent scrobbles",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "build": "node scripts/build.js"
+  },
+  "keywords": [
+    "threejs",
+    "lastfm",
+    "music-visualization",
+    "3d",
+    "docker"
+  ],
+  "author": "PaulGdB",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "three": "^0.187.0"
+  }
+}

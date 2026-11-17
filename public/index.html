@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Festival 3D — Ce à quoi ressemble ma musique</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎪</text></svg>">
+  
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/style.css">
+
+  <!-- Three.js Import Map -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three.module.js",
+        "three/addons/": "/vendor/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- 3D Canvas Container -->
+  <div id="canvas-container"></div>
+
+  <!-- HUD Interface -->
+  <header class="hud-header">
+    <div class="brand">
+      <div class="logo-badge">🎪</div>
+      <div class="brand-text">
+        <h1>SOUNDLAND 3D</h1>
+        <p class="subtitle">Festival de mes écoutes récentes</p>
+      </div>
+    </div>
+
+    <!-- Live Scrobble & Cache Status -->
+    <div class="status-panel">
+      <div id="now-playing-pill" class="status-pill hidden">
+        <span class="live-dot"></span>
+        <span class="now-label">EN DIRECT :</span>
+        <span id="now-title" class="marquee">Chargement...</span>
+      </div>
+
+      <div id="cache-pill" class="status-pill cache-indicator" title="Le serveur met en cache les données Last.fm pour éviter de saturer l'API">
+        <span class="cache-icon">⚡</span>
+        <span id="cache-status-text">Initialisation...</span>
+      </div>
+
+      <button id="btn-refresh" class="btn-icon" title="Rafraîchir les morceaux">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+      </button>
+
+      <button id="btn-simulate-error" class="btn-toggle-demo" title="Tester le comportement en cas de panne Last.fm">
+        <span class="btn-text">Test Panne</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Notification Banner (For Errors or Offline Mode) -->
+  <div id="alert-banner" class="alert-banner hidden">
+    <div class="alert-content">
+      <span class="alert-icon">⚠️</span>
+      <span id="alert-message">Last.fm est temporairement inaccessible. Données de secours affichées.</span>
+    </div>
+    <button id="alert-close" class="alert-close">&times;</button>
+  </div>
+
+  <!-- Controls Instructions Overlay -->
+  <div id="hint-controls" class="hint-controls">
+    <span>🖱️ Tourner / Glisser pour naviguer</span>
+    <span>🔍 Molette / Pincer pour zoomer</span>
+    <span>💿 Cliquer sur un vinyle pour écouter</span>
+  </div>
+
+  <!-- Bottom Stage Navigation Bar -->
+  <nav class="stage-nav">
+    <div class="nav-scroll-container">
+      <button class="stage-btn active" data-stage="GLOBAL">
+        <span class="stage-emoji">🌍</span>
+        <span class="stage-label">Vue Globale</span>
+      </button>
+      <button class="stage-btn" data-stage="TECHNO">
+        <span class="stage-emoji">⚡</span>
+        <span class="stage-label">Bunker Techno</span>
+      </button>
+      <button class="stage-btn" data-stage="RAP">
+        <span class="stage-emoji">🎤</span>
+        <span class="stage-label">Block Rap</span>
+      </button>
+      <button class="stage-btn" data-stage="REGGAE">
+        <span class="stage-emoji">🌴</span>
+        <span class="stage-label">Oasis Reggae</span>
+      </button>
+      <button class="stage-btn" data-stage="CLASSICAL">
+        <span class="stage-emoji">🎻</span>
+        <span class="stage-label">Dôme Classique</span>
+      </button>
+      <button class="stage-btn" data-stage="ROCK_METAL">
+        <span class="stage-emoji">🔥</span>
+        <span class="stage-label">Pit Metal</span>
+      </button>
+      <button class="stage-btn" data-stage="MAINSTAGE">
+        <span class="stage-emoji">🎪</span>
+        <span class="stage-label">Mainstage</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Track Detail Modal (Glassmorphism Card) -->
+  <div id="track-modal" class="modal-overlay hidden">
+    <div class="track-card">
+      <button id="modal-close" class="modal-close" aria-label="Fermer">&times;</button>
+      <div class="card-cover-wrapper">
+        <img id="card-image" src="" alt="Album Cover">
+        <div id="card-badge-now" class="badge-now hidden">EN ÉCOUTE</div>
+      </div>
+      <div class="card-details">
+        <div class="card-stage-tag" id="card-stage-name">Scène Techno</div>
+        <h2 id="card-track-name">Titre du morceau</h2>
+        <h3 id="card-artist-name">Artiste</h3>
+        <p class="card-album" id="card-album-name">Nom de l'album</p>
+        <div class="card-meta">
+          <span id="card-date">Il y a 10 minutes</span>
+          <div id="card-tags-list" class="tags-container"></div>
+        </div>
+        <div class="card-actions">
+          <a id="card-link" href="#" target="_blank" rel="noopener noreferrer" class="btn-primary">
+            Voir sur Last.fm
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Screen -->
+  <div id="loader" class="loader-overlay">
+    <div class="loader-box">
+      <div class="loader-spinner"></div>
+      <h2>Ouverture des portes du festival...</h2>
+      <p id="loader-sub">Connexion sécurisée au serveur proxy Last.fm</p>
+    </div>
+  </div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
