@@ -47,8 +47,9 @@ const STAGE_VIEWS = {
    ========================================================================== */
 const container = document.getElementById('canvas-container');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x060810);
-scene.fog = new THREE.FogExp2(0x060810, 0.008);
+// Warm twilight night sky & atmospheric fog
+scene.background = new THREE.Color(0x0e0c16);
+scene.fog = new THREE.FogExp2(0x0e0c16, 0.007);
 
 const camera = new THREE.PerspectiveCamera(
   45,
@@ -83,12 +84,12 @@ const mouse = new THREE.Vector2(-999, -999);
 const animatedElements = [];
 
 function buildEnvironment() {
-  // 1. Ambient & Directional Moonlight
-  const ambientLight = new THREE.AmbientLight(0x303550, 1.2);
+  // 1. Warm Golden Ambient & Festival Lantern Moonlight
+  const ambientLight = new THREE.AmbientLight(0xffeedb, 1.4);
   scene.add(ambientLight);
 
-  const moonLight = new THREE.DirectionalLight(0xa5c2f0, 1.4);
-  moonLight.position.set(40, 90, 40);
+  const moonLight = new THREE.DirectionalLight(0xffd8aa, 1.5);
+  moonLight.position.set(40, 85, 40);
   moonLight.castShadow = true;
   moonLight.shadow.mapSize.width = 1024;
   moonLight.shadow.mapSize.height = 1024;
@@ -104,26 +105,26 @@ function buildEnvironment() {
     starPos[i + 2] = (Math.random() - 0.5) * 400;
   }
   starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-  const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.8, transparent: true, opacity: 0.7 });
+  const starMat = new THREE.PointsMaterial({ color: 0xfff6ea, size: 0.85, transparent: true, opacity: 0.75 });
   const starField = new THREE.Points(starGeo, starMat);
   scene.add(starField);
 
-  // 3. Water Ocean Plane
+  // 3. Water Ocean Plane (Warm deep midnight reflection)
   const waterGeo = new THREE.PlaneGeometry(350, 350);
   const waterMat = new THREE.MeshStandardMaterial({
-    color: 0x050b18,
-    roughness: 0.2,
-    metalness: 0.8
+    color: 0x090812,
+    roughness: 0.25,
+    metalness: 0.7
   });
   const water = new THREE.Mesh(waterGeo, waterMat);
   water.rotation.x = -Math.PI / 2;
   water.position.y = -0.4;
   scene.add(water);
 
-  // 4. Main Island Terrain (Tighter & denser festival grounds)
+  // 4. Main Island Terrain (Warm organic dark turf, grid completely removed)
   const islandGeo = new THREE.CylinderGeometry(52, 58, 2, 48);
   const islandMat = new THREE.MeshStandardMaterial({
-    color: 0x141824,
+    color: 0x221e26,
     roughness: 0.85,
     metalness: 0.1
   });
@@ -131,11 +132,6 @@ function buildEnvironment() {
   island.position.y = -0.8;
   island.receiveShadow = true;
   scene.add(island);
-
-  // Decorative festival floor grid
-  const gridHelper = new THREE.GridHelper(95, 26, 0x00f0ff, 0x1d2436);
-  gridHelper.position.y = 0.22;
-  scene.add(gridHelper);
 
   // 5. Build Stages & Central Plaza Architecture
   buildCentralPlaza();
@@ -155,37 +151,37 @@ function buildCentralPlaza() {
   const group = new THREE.Group();
   group.position.set(0, 0, 0);
 
-  // Circular courtyard floor
+  // Circular courtyard floor - warm timber & terracotta festival plaza
   const plazaGeo = new THREE.CylinderGeometry(8.5, 9.2, 0.4, 32);
   const plazaMat = new THREE.MeshStandardMaterial({
-    color: 0x181d2a,
-    roughness: 0.5,
-    metalness: 0.3
+    color: 0x2e2420,
+    roughness: 0.65,
+    metalness: 0.15
   });
   const plaza = new THREE.Mesh(plazaGeo, plazaMat);
   plaza.position.y = 0.2;
   plaza.receiveShadow = true;
   group.add(plaza);
 
-  // Outer subtle glowing boundary ring
+  // Outer warm golden glowing boundary ring
   const ringGeo = new THREE.RingGeometry(8.6, 9.0, 32);
   const ringMat = new THREE.MeshBasicMaterial({
-    color: 0x00f0ff,
+    color: 0xffaa33,
     side: THREE.DoubleSide,
     transparent: true,
-    opacity: 0.6
+    opacity: 0.75
   });
   const ring = new THREE.Mesh(ringGeo, ringMat);
   ring.rotation.x = -Math.PI / 2;
   ring.position.y = 0.42;
   group.add(ring);
 
-  // Plaza Ambient Soft Uplight
-  const plazaLight = new THREE.PointLight(0x00f0ff, 2.5, 18);
-  plazaLight.position.set(0, 1.5, 0);
+  // Plaza Warm Golden Lantern Uplight
+  const plazaLight = new THREE.PointLight(0xffa238, 3.2, 24);
+  plazaLight.position.set(0, 1.8, 0);
   group.add(plazaLight);
 
-  // Pathway strips radiating out to the 5 equidistant stages
+  // Pathway strips radiating out to the 5 equidistant stages with warm lantern beacons
   const stageTargets = [
     { x: 0, z: -26 },   // Techno (North)
     { x: 25, z: -8 },   // Rap / Urban Party (East-North-East)
@@ -194,22 +190,34 @@ function buildCentralPlaza() {
     { x: -25, z: -8 }   // Metal (West-North-West)
   ];
 
+  const lanternGeo = new THREE.SphereGeometry(0.2, 12, 12);
+  const lanternMat = new THREE.MeshBasicMaterial({ color: 0xffb74d });
+
   for (const st of stageTargets) {
     const dx = st.x;
     const dz = st.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
     const angle = Math.atan2(dz, dx);
 
-    const pathGeo = new THREE.PlaneGeometry(dist - 8, 1.2);
-    const pathMat = new THREE.MeshBasicMaterial({
-      color: 0x1d273a,
-      side: THREE.DoubleSide
+    const pathGeo = new THREE.PlaneGeometry(dist - 8, 1.4);
+    const pathMat = new THREE.MeshStandardMaterial({
+      color: 0x2d221e,
+      roughness: 0.85
     });
     const path = new THREE.Mesh(pathGeo, pathMat);
     path.rotation.x = -Math.PI / 2;
     path.rotation.z = -angle;
     path.position.set((dx / 2), 0.22, (dz / 2));
     group.add(path);
+
+    // Warm lantern beacons along the pathway
+    for (const frac of [0.38, 0.68]) {
+      const lx = dx * frac;
+      const lz = dz * frac;
+      const lantern = new THREE.Mesh(lanternGeo, lanternMat);
+      lantern.position.set(lx, 0.45, lz);
+      group.add(lantern);
+    }
   }
 
   scene.add(group);
@@ -220,12 +228,17 @@ function buildTechnoWarehouse() {
   const group = new THREE.Group();
   group.position.set(0, 0, -26);
 
-  // Larger dark industrial metal bunker
+  // Industrial warm-black metal bunker floor
   const floorGeo = new THREE.BoxGeometry(22, 0.8, 22);
-  const floorMat = new THREE.MeshStandardMaterial({ color: 0x0c0f18, roughness: 0.2, metalness: 0.9 });
+  const floorMat = new THREE.MeshStandardMaterial({ color: 0x141217, roughness: 0.25, metalness: 0.85 });
   const floor = new THREE.Mesh(floorGeo, floorMat);
   floor.position.y = 0.4;
   group.add(floor);
+
+  // Warm amber halogen uplight to balance the neon with cozy warmth
+  const warmBunkerGlow = new THREE.PointLight(0xff8833, 3.2, 22);
+  warmBunkerGlow.position.set(0, 1.8, 3);
+  group.add(warmBunkerGlow);
 
   // Cyberpunk Neon U-Shaped Trusses Structure (Open in front for 100% unobstructed view)
   const pillarGeo = new THREE.CylinderGeometry(0.35, 0.35, 10.5);
@@ -270,8 +283,8 @@ function buildTechnoWarehouse() {
   const speakerWallGroup = new THREE.Group();
   speakerWallGroup.position.set(0, 0, -9.2);
 
-  const speakerCabMat = new THREE.MeshStandardMaterial({ color: 0x111317, roughness: 0.7, metalness: 0.3 });
-  const wooferConeMat = new THREE.MeshStandardMaterial({ color: 0x242832, roughness: 0.4, metalness: 0.6 });
+  const speakerCabMat = new THREE.MeshStandardMaterial({ color: 0x171415, roughness: 0.7, metalness: 0.3 });
+  const wooferConeMat = new THREE.MeshStandardMaterial({ color: 0x27242c, roughness: 0.4, metalness: 0.6 });
   const dustCapMat = new THREE.MeshStandardMaterial({ color: 0x9099a8, roughness: 0.2, metalness: 0.9 });
   const glowingTrimMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
 
@@ -355,66 +368,87 @@ function buildTechnoWarehouse() {
   scene.add(group);
 }
 
-// 3. Urban Party (Briques, buildings urbains & lampadaires)
+// 3. Urban Party (Briques chaudes, buildings new-yorkais aux fenêtres allumées & lampadaires dorés)
 function buildRapCity() {
   const group = new THREE.Group();
   group.position.set(25, 0, -8);
 
-  // Larger asphalt ground
+  // Warm dark cobblestone/asphalt ground
   const groundGeo = new THREE.BoxGeometry(22, 0.8, 22);
-  const groundMat = new THREE.MeshStandardMaterial({ color: 0x181a20, roughness: 0.9 });
+  const groundMat = new THREE.MeshStandardMaterial({ color: 0x271e1d, roughness: 0.85 });
   const ground = new THREE.Mesh(groundGeo, groundMat);
   ground.position.y = 0.4;
   group.add(ground);
 
-  // Stylized Building Silhouettes in background
+  // Stylized Warm Brick Building Silhouettes in background with glowing golden windows
   const heights = [8, 14, 10, 16, 11, 7];
+  const windowMat = new THREE.MeshBasicMaterial({ color: 0xffd15c });
+  const winGeo = new THREE.BoxGeometry(0.4, 0.6, 0.1);
+
   for (let i = 0; i < heights.length; i++) {
-    const bGeo = new THREE.BoxGeometry(2.8, heights[i], 3.2);
-    const bMat = new THREE.MeshStandardMaterial({ color: 0x24283b, roughness: 0.8 });
+    const bHeight = heights[i];
+    const bGeo = new THREE.BoxGeometry(2.8, bHeight, 3.2);
+    const bMat = new THREE.MeshStandardMaterial({ color: 0x3d2722, roughness: 0.75 });
     const building = new THREE.Mesh(bGeo, bMat);
-    building.position.set(-7.5 + i * 3, heights[i] / 2, -7.5);
+    const bX = -7.5 + i * 3;
+    const bZ = -7.5;
+    building.position.set(bX, bHeight / 2, bZ);
     group.add(building);
+
+    // Warm glowing windows along the facade
+    const floors = Math.floor(bHeight / 2.2);
+    for (let f = 1; f < floors; f++) {
+      for (const colOffset of [-0.7, 0.7]) {
+        const win = new THREE.Mesh(winGeo, windowMat);
+        win.position.set(bX + colOffset, f * 2.2, bZ + 1.62);
+        group.add(win);
+      }
+    }
   }
 
-  // Warm Amber Street Lamps
-  const streetLight = new THREE.PointLight(0xffaa00, 4.5, 28);
+  // Warm Amber Incandescent Street Lamp
+  const streetLight = new THREE.PointLight(0xffa12b, 5.5, 30);
   streetLight.position.set(0, 7.5, 2);
   group.add(streetLight);
 
   const poleGeo = new THREE.CylinderGeometry(0.18, 0.18, 7.5);
-  const poleMat = new THREE.MeshStandardMaterial({ color: 0x111 });
+  const poleMat = new THREE.MeshStandardMaterial({ color: 0x231d1b });
   const pole = new THREE.Mesh(poleGeo, poleMat);
   pole.position.set(0, 3.75, 2);
   group.add(pole);
 
-  createStageSign("🎤 URBAN PARTY", 25, 10.5, -8, 0xffaa00);
+  // Glowing lantern cap
+  const lanternCap = new THREE.Mesh(new THREE.SphereGeometry(0.35, 12, 12), windowMat);
+  lanternCap.position.set(0, 7.4, 2);
+  group.add(lanternCap);
+
+  createStageSign("🎤 URBAN PARTY", 25, 10.5, -8, 0xffa834);
   scene.add(group);
 }
 
-// 4. Reggae Oasis (Sable agrandi, palmiers, chill)
+// 4. Reggae Oasis (Sable doré chaud, palmiers tropicaux, feu de camp chaleureux)
 function buildReggaeOasis() {
   const group = new THREE.Group();
   group.position.set(15, 0, 21);
 
-  // Larger sand dune floor
+  // Warm golden sand dune floor
   const sandGeo = new THREE.CylinderGeometry(11.5, 13, 1, 32);
-  const sandMat = new THREE.MeshStandardMaterial({ color: 0x3d3522, roughness: 0.95 });
+  const sandMat = new THREE.MeshStandardMaterial({ color: 0x6e522f, roughness: 0.95 });
   const sand = new THREE.Mesh(sandGeo, sandMat);
   sand.position.y = 0.5;
   group.add(sand);
 
-  // Palm trees
+  // Palm trees with rich tropical warm foliage
   function createPalm(x, z, h) {
-    const trunkGeo = new THREE.CylinderGeometry(0.25, 0.4, h, 6);
-    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a3728 });
+    const trunkGeo = new THREE.CylinderGeometry(0.28, 0.45, h, 8);
+    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x563c26 });
     const trunk = new THREE.Mesh(trunkGeo, trunkMat);
     trunk.position.set(x, h / 2, z);
     trunk.rotation.z = (Math.random() - 0.5) * 0.15;
     group.add(trunk);
 
-    const leavesGeo = new THREE.ConeGeometry(2.8, 1.4, 6);
-    const leavesMat = new THREE.MeshStandardMaterial({ color: 0x2ecc71, roughness: 0.6 });
+    const leavesGeo = new THREE.ConeGeometry(3.0, 1.5, 8);
+    const leavesMat = new THREE.MeshStandardMaterial({ color: 0x3aa34e, roughness: 0.65 });
     const leaves = new THREE.Mesh(leavesGeo, leavesMat);
     leaves.position.set(x, h, z);
     group.add(leaves);
@@ -424,32 +458,49 @@ function buildReggaeOasis() {
   createPalm(5.5, 3, 6.5);
   createPalm(0, -6, 6);
 
-  // Campfire glow
-  const fireLight = new THREE.PointLight(0xf1c40f, 4, 24);
-  fireLight.position.set(0, 1.5, 0);
+  // Fire pit stone circle
+  const stoneMat = new THREE.MeshStandardMaterial({ color: 0x2b231d, roughness: 0.9 });
+  for (let a = 0; a < 8; a++) {
+    const angle = (a / 8) * Math.PI * 2;
+    const stone = new THREE.Mesh(new THREE.DodecahedronGeometry(0.35), stoneMat);
+    stone.position.set(Math.cos(angle) * 1.2, 1.05, Math.sin(angle) * 1.2);
+    group.add(stone);
+  }
+
+  // Glowing campfire core & warm flame light
+  const flameCore = new THREE.Mesh(
+    new THREE.SphereGeometry(0.4, 16, 16),
+    new THREE.MeshBasicMaterial({ color: 0xff6600 })
+  );
+  flameCore.position.set(0, 1.2, 0);
+  group.add(flameCore);
+
+  const fireLight = new THREE.PointLight(0xff6812, 5.5, 28);
+  fireLight.position.set(0, 1.8, 0);
   group.add(fireLight);
 
   animatedElements.push((time) => {
-    fireLight.intensity = 3.5 + Math.sin(time * 8) * 0.9;
+    fireLight.intensity = 4.8 + Math.sin(time * 8) * 1.2;
+    flameCore.scale.setScalar(1 + Math.sin(time * 12) * 0.15);
   });
 
-  createStageSign("🌴 SUNKEN OASIS", 15, 8.5, 21, 0x2ecc71);
+  createStageSign("🌴 SUNKEN OASIS", 15, 8.5, 21, 0x44c965);
   scene.add(group);
 }
 
-// 5. Classical Amphitheater (Colonnes de marbre agrandies, dôme & lueur mystique)
+// 5. Classical Amphitheater (Marbre champagne chaleureux, colonnes à la bougie & lueur dorée acoustique)
 function buildClassicalAmphitheater() {
   const group = new THREE.Group();
   group.position.set(-15, 0, 21);
 
-  // Larger Marble circular base
+  // Warm Antique Marble circular base
   const baseGeo = new THREE.CylinderGeometry(11, 12, 1, 32);
-  const baseMat = new THREE.MeshStandardMaterial({ color: 0x2c2638, roughness: 0.3 });
+  const baseMat = new THREE.MeshStandardMaterial({ color: 0x3d3035, roughness: 0.35, metalness: 0.1 });
   const base = new THREE.Mesh(baseGeo, baseMat);
   base.position.y = 0.5;
   group.add(base);
 
-  // Semicircle Marble Columns
+  // Semicircle Alabaster & Candlelit Marble Columns
   const radius = 8.5;
   const colCount = 10;
   for (let i = 0; i < colCount; i++) {
@@ -458,43 +509,64 @@ function buildClassicalAmphitheater() {
     const z = -Math.sin(angle) * radius;
 
     const colGeo = new THREE.CylinderGeometry(0.35, 0.4, 7, 12);
-    const colMat = new THREE.MeshStandardMaterial({ color: 0x7c7294, roughness: 0.2 });
+    const colMat = new THREE.MeshStandardMaterial({ color: 0xb5a396, roughness: 0.3 });
     const col = new THREE.Mesh(colGeo, colMat);
     col.position.set(x, 4, z);
     group.add(col);
+
+    // Candle beacon atop each column
+    const candleGeo = new THREE.SphereGeometry(0.14, 8, 8);
+    const candleMat = new THREE.MeshBasicMaterial({ color: 0xffd27d });
+    const candle = new THREE.Mesh(candleGeo, candleMat);
+    candle.position.set(x, 7.6, z);
+    group.add(candle);
   }
 
-  // Soft Purple/Blue Dome Light
-  const domeLight = new THREE.PointLight(0x9b59b6, 4, 26);
+  // Warm Golden Chandelier / Candlelit Acoustic Glow
+  const domeLight = new THREE.PointLight(0xffc57a, 5.2, 30);
   domeLight.position.set(0, 5, -2);
   group.add(domeLight);
 
-  createStageSign("🎻 CRYSTAL DOME", -15, 8.8, 21, 0x9b59b6);
+  createStageSign("🎻 CRYSTAL DOME", -15, 8.8, 21, 0xe2ba77);
   scene.add(group);
 }
 
-// 6. Metal & Rock Volcanic Pit
+// 6. Metal & Rock Volcanic Pit (Roches volcaniques sombres, braises et lueur de lave ardente)
 function buildMetalPit() {
   const group = new THREE.Group();
   group.position.set(-25, 0, -8);
 
-  // Dark volcanic stone (Larger)
+  // Dark volcanic stone
   const stoneGeo = new THREE.CylinderGeometry(9.5, 10.5, 1, 20);
-  const stoneMat = new THREE.MeshStandardMaterial({ color: 0x181012, roughness: 0.95 });
+  const stoneMat = new THREE.MeshStandardMaterial({ color: 0x221315, roughness: 0.95 });
   const stone = new THREE.Mesh(stoneGeo, stoneMat);
   stone.position.y = 0.5;
   group.add(stone);
 
+  // Glowing lava circle / magma fissure on the floor
+  const lavaGeo = new THREE.RingGeometry(3.5, 5.5, 24);
+  const lavaMat = new THREE.MeshBasicMaterial({
+    color: 0xff3b00,
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.65
+  });
+  const lava = new THREE.Mesh(lavaGeo, lavaMat);
+  lava.rotation.x = -Math.PI / 2;
+  lava.position.y = 1.02;
+  group.add(lava);
+
   // Fiery Pit Light
-  const flameLight = new THREE.PointLight(0xe74c3c, 4.5, 24);
-  flameLight.position.set(0, 2, 0);
+  const flameLight = new THREE.PointLight(0xff3300, 5.5, 28);
+  flameLight.position.set(0, 2.2, 0);
   group.add(flameLight);
 
   animatedElements.push((time) => {
-    flameLight.intensity = 4 + Math.sin(time * 10) * 1.3;
+    flameLight.intensity = 4.8 + Math.sin(time * 10) * 1.5;
+    lava.scale.setScalar(1 + Math.sin(time * 4) * 0.05);
   });
 
-  createStageSign("🔥 VOLCANIC PIT", -25, 8, -8, 0xe74c3c);
+  createStageSign("🔥 VOLCANIC PIT", -25, 8, -8, 0xff4810);
   scene.add(group);
 }
 
