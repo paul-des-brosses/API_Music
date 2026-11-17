@@ -15,31 +15,31 @@ const STATE = {
   vinylMeshes: []
 };
 
-// Stage Coordinates & Look Targets in World Space
+// Stage Coordinates & Look Targets in World Space (Tighter & Cohesive Layout)
 const STAGE_VIEWS = {
   GLOBAL: {
-    cam: { x: 0, y: 70, z: 95 },
+    cam: { x: 0, y: 62, z: 80 },
     target: { x: 0, y: 0, z: 0 }
   },
   TECHNO: {
-    cam: { x: -32, y: 16, z: -5 },
-    target: { x: -32, y: 3, z: -25 }
+    cam: { x: -25, y: 15, z: -2 },
+    target: { x: -25, y: 3.5, z: -20 }
   },
   RAP: {
-    cam: { x: 32, y: 16, z: -5 },
-    target: { x: 32, y: 3, z: -25 }
+    cam: { x: 25, y: 15, z: -2 },
+    target: { x: 25, y: 3.5, z: -20 }
   },
   REGGAE: {
-    cam: { x: 35, y: 14, z: 42 },
-    target: { x: 35, y: 3, z: 25 }
+    cam: { x: 26, y: 14, z: 36 },
+    target: { x: 26, y: 3, z: 20 }
   },
   CLASSICAL: {
-    cam: { x: -32, y: 14, z: 42 },
-    target: { x: -32, y: 3, z: 25 }
+    cam: { x: -25, y: 14, z: 36 },
+    target: { x: -25, y: 3, z: 20 }
   },
   ROCK_METAL: {
-    cam: { x: -45, y: 14, z: 18 },
-    target: { x: -45, y: 3, z: 0 }
+    cam: { x: -35, y: 14, z: 16 },
+    target: { x: -35, y: 3, z: 0 }
   },
   MAINSTAGE: {
     cam: { x: 0, y: 18, z: 28 },
@@ -125,8 +125,8 @@ function buildEnvironment() {
   water.position.y = -0.4;
   scene.add(water);
 
-  // 4. Main Island Terrain
-  const islandGeo = new THREE.CylinderGeometry(58, 64, 2, 48);
+  // 4. Main Island Terrain (Tighter & denser festival grounds)
+  const islandGeo = new THREE.CylinderGeometry(52, 58, 2, 48);
   const islandMat = new THREE.MeshStandardMaterial({
     color: 0x141824,
     roughness: 0.85,
@@ -138,7 +138,7 @@ function buildEnvironment() {
   scene.add(island);
 
   // Decorative festival floor grid
-  const gridHelper = new THREE.GridHelper(110, 30, 0x00f0ff, 0x1d2436);
+  const gridHelper = new THREE.GridHelper(95, 26, 0x00f0ff, 0x1d2436);
   gridHelper.position.y = 0.22;
   scene.add(gridHelper);
 
@@ -155,13 +155,13 @@ function buildEnvironment() {
    STAGE ARCHITECTURES
    ========================================================================== */
 
-// 1. Central Mainstage
+// 1. Central Mainstage (Grand arche centrale & grand écran)
 function buildMainstage() {
   const group = new THREE.Group();
   group.position.set(0, 0, 0);
 
-  // Stage Platform
-  const baseGeo = new THREE.BoxGeometry(22, 1.5, 14);
+  // Larger Stage Platform
+  const baseGeo = new THREE.BoxGeometry(26, 1.5, 17);
   const baseMat = new THREE.MeshStandardMaterial({ color: 0x222636, roughness: 0.4 });
   const base = new THREE.Mesh(baseGeo, baseMat);
   base.position.y = 0.75;
@@ -169,147 +169,207 @@ function buildMainstage() {
   group.add(base);
 
   // Big Curved LED Screen Backdrop
-  const screenGeo = new THREE.CylinderGeometry(10, 10, 6, 24, 1, true, -Math.PI / 2.8, Math.PI / 1.4);
+  const screenGeo = new THREE.CylinderGeometry(12, 12, 7.5, 32, 1, true, -Math.PI / 2.7, Math.PI / 1.35);
   const screenMat = new THREE.MeshBasicMaterial({
     color: 0x111628,
     side: THREE.DoubleSide
   });
   const screen = new THREE.Mesh(screenGeo, screenMat);
-  screen.position.set(0, 4.5, -4);
+  screen.position.set(0, 5.2, -4.5);
   group.add(screen);
 
   // Spotlights pointing skywards
-  const spot1 = new THREE.SpotLight(0xff007f, 8, 40, Math.PI / 6, 0.4);
-  spot1.position.set(-8, 1.5, 5);
+  const spot1 = new THREE.SpotLight(0xff007f, 9, 45, Math.PI / 6, 0.4);
+  spot1.position.set(-10, 1.5, 6);
   spot1.target.position.set(-15, 30, -5);
   group.add(spot1);
   group.add(spot1.target);
 
-  const spot2 = new THREE.SpotLight(0x00f0ff, 8, 40, Math.PI / 6, 0.4);
-  spot2.position.set(8, 1.5, 5);
+  const spot2 = new THREE.SpotLight(0x00f0ff, 9, 45, Math.PI / 6, 0.4);
+  spot2.position.set(10, 1.5, 6);
   spot2.target.position.set(15, 30, -5);
   group.add(spot2);
   group.add(spot2.target);
 
   // Sweeping festival lights animation
   animatedElements.push((time) => {
-    spot1.target.position.x = -15 + Math.sin(time * 2) * 8;
-    spot2.target.position.x = 15 - Math.sin(time * 2) * 8;
+    spot1.target.position.x = -15 + Math.sin(time * 2) * 9;
+    spot2.target.position.x = 15 - Math.sin(time * 2) * 9;
   });
 
   // Stage Title Marker
-  createStageSign("🎪 MAINSTAGE", 0, 8.5, -4, 0xf39c12);
+  createStageSign("🎪 MAINSTAGE", 0, 9.8, -4.5, 0xf39c12);
 
   scene.add(group);
 }
 
-// 2. Techno Warehouse (Bunker néon & lasers)
+// 2. Techno Warehouse (Bunker néon, lasers & Mur d'enceintes Sound System)
 function buildTechnoWarehouse() {
   const group = new THREE.Group();
-  group.position.set(-32, 0, -25);
+  group.position.set(-25, 0, -20);
 
-  // Dark industrial metal bunker
-  const floorGeo = new THREE.BoxGeometry(16, 0.8, 16);
+  // Larger dark industrial metal bunker
+  const floorGeo = new THREE.BoxGeometry(22, 0.8, 22);
   const floorMat = new THREE.MeshStandardMaterial({ color: 0x0c0f18, roughness: 0.2, metalness: 0.9 });
   const floor = new THREE.Mesh(floorGeo, floorMat);
   floor.position.y = 0.4;
   group.add(floor);
 
   // Cyberpunk Neon Trusses
-  for (let x = -7; x <= 7; x += 14) {
-    const pillarGeo = new THREE.CylinderGeometry(0.3, 0.3, 9);
+  for (let x = -9.5; x <= 9.5; x += 19) {
+    const pillarGeo = new THREE.CylinderGeometry(0.35, 0.35, 10.5);
     const pillarMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
     const p1 = new THREE.Mesh(pillarGeo, pillarMat);
-    p1.position.set(x, 4.5, -7);
+    p1.position.set(x, 5.25, -9.5);
     group.add(p1);
 
     const p2 = new THREE.Mesh(pillarGeo, pillarMat);
-    p2.position.set(x, 4.5, 7);
+    p2.position.set(x, 5.25, 9.5);
     group.add(p2);
   }
 
-  // Cross Beam
-  const beamGeo = new THREE.BoxGeometry(14.6, 0.4, 0.4);
+  // Cross Beams
+  const beamGeo = new THREE.BoxGeometry(19.6, 0.4, 0.4);
   const beamMat = new THREE.MeshBasicMaterial({ color: 0xff007f });
   const b1 = new THREE.Mesh(beamGeo, beamMat);
-  b1.position.set(0, 9, -7);
+  b1.position.set(0, 10.5, -9.5);
   group.add(b1);
   const b2 = new THREE.Mesh(beamGeo, beamMat);
-  b2.position.set(0, 9, 7);
+  b2.position.set(0, 10.5, 9.5);
   group.add(b2);
 
+  /* --- MASSIVE SPEAKER WALL (Sound System d'enceintes techno en fond) --- */
+  const speakerWallGroup = new THREE.Group();
+  speakerWallGroup.position.set(0, 0, -9.2);
+
+  const speakerCabMat = new THREE.MeshStandardMaterial({ color: 0x111317, roughness: 0.7, metalness: 0.3 });
+  const wooferConeMat = new THREE.MeshStandardMaterial({ color: 0x242832, roughness: 0.4, metalness: 0.6 });
+  const dustCapMat = new THREE.MeshStandardMaterial({ color: 0x9099a8, roughness: 0.2, metalness: 0.9 });
+  const glowingTrimMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
+
+  const speakerCones = [];
+
+  // 6 columns x 3 rows of subwoofers
+  const cols = 6;
+  const rows = 3;
+  const cabWidth = 2.8;
+  const cabHeight = 2.4;
+  const startX = -((cols - 1) * cabWidth) / 2;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const cabX = startX + c * cabWidth;
+      const cabY = 1.3 + r * cabHeight;
+
+      // Wooden speaker cabinet
+      const cabGeo = new THREE.BoxGeometry(cabWidth - 0.2, cabHeight - 0.2, 1.8);
+      const cab = new THREE.Mesh(cabGeo, speakerCabMat);
+      cab.position.set(cabX, cabY, 0);
+      speakerWallGroup.add(cab);
+
+      // Woofer driver cone
+      const coneGeo = new THREE.CylinderGeometry(0.85, 0.5, 0.2, 24);
+      const cone = new THREE.Mesh(coneGeo, wooferConeMat);
+      cone.rotation.x = Math.PI / 2;
+      cone.position.set(cabX, cabY, 0.85);
+      speakerWallGroup.add(cone);
+      speakerCones.push(cone);
+
+      // Center silver dust cap
+      const capGeo = new THREE.SphereGeometry(0.3, 16, 16);
+      const cap = new THREE.Mesh(capGeo, dustCapMat);
+      cap.position.set(cabX, cabY, 0.95);
+      speakerWallGroup.add(cap);
+    }
+  }
+
+  // Top Neon Trim over the speaker wall
+  const topTrimGeo = new THREE.BoxGeometry(cols * cabWidth, 0.15, 0.15);
+  const topTrim = new THREE.Mesh(topTrimGeo, glowingTrimMat);
+  topTrim.position.set(0, 1.3 + rows * cabHeight, 0.9);
+  speakerWallGroup.add(topTrim);
+
+  group.add(speakerWallGroup);
+
   // Upward Laser Beams
-  const laserGeo = new THREE.CylinderGeometry(0.1, 0.2, 50);
+  const laserGeo = new THREE.CylinderGeometry(0.12, 0.25, 55);
   const laserMat1 = new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.65 });
   const laserMat2 = new THREE.MeshBasicMaterial({ color: 0xff007f, transparent: true, opacity: 0.65 });
 
   const l1 = new THREE.Mesh(laserGeo, laserMat1);
-  l1.position.set(-4, 25, 0);
+  l1.position.set(-6, 27, 0);
   group.add(l1);
 
   const l2 = new THREE.Mesh(laserGeo, laserMat2);
-  l2.position.set(4, 25, 0);
+  l2.position.set(6, 27, 0);
   group.add(l2);
 
   // Strobe Light
-  const strobe = new THREE.PointLight(0x00f0ff, 4, 25);
-  strobe.position.set(0, 5, 0);
+  const strobe = new THREE.PointLight(0x00f0ff, 4.5, 30);
+  strobe.position.set(0, 6, 0);
   group.add(strobe);
 
+  // Animations: Strobe, swinging lasers, and PUMPING BASS WOOFERS
   animatedElements.push((time) => {
-    strobe.intensity = Math.sin(time * 12) > 0.3 ? 5 : 1;
-    l1.rotation.z = Math.sin(time * 1.5) * 0.15;
-    l2.rotation.z = -Math.sin(time * 1.5) * 0.15;
+    strobe.intensity = Math.sin(time * 12) > 0.25 ? 5.5 : 1;
+    l1.rotation.z = Math.sin(time * 1.5) * 0.18;
+    l2.rotation.z = -Math.sin(time * 1.5) * 0.18;
+
+    // Bass vibration on speaker cones
+    const bassPunch = 1 + Math.max(0, Math.sin(time * 10)) * 0.25;
+    for (const cone of speakerCones) {
+      cone.scale.set(bassPunch, 1, bassPunch);
+    }
   });
 
-  createStageSign("⚡ RAVE BUNKER", -32, 10, -25, 0x00f0ff);
+  createStageSign("⚡ RAVE BUNKER", -25, 11, -20, 0x00f0ff);
   scene.add(group);
 }
 
-// 3. Rap Block Party (Briques, buildings urbains & lampadaires)
+// 3. Urban Party (Briques, buildings urbains & lampadaires)
 function buildRapCity() {
   const group = new THREE.Group();
-  group.position.set(32, 0, -25);
+  group.position.set(25, 0, -20);
 
-  // Asphalt ground
-  const groundGeo = new THREE.BoxGeometry(16, 0.8, 16);
+  // Larger asphalt ground
+  const groundGeo = new THREE.BoxGeometry(22, 0.8, 22);
   const groundMat = new THREE.MeshStandardMaterial({ color: 0x181a20, roughness: 0.9 });
   const ground = new THREE.Mesh(groundGeo, groundMat);
   ground.position.y = 0.4;
   group.add(ground);
 
   // Stylized Building Silhouettes in background
-  const heights = [7, 12, 9, 14, 8];
+  const heights = [8, 14, 10, 16, 11, 7];
   for (let i = 0; i < heights.length; i++) {
-    const bGeo = new THREE.BoxGeometry(2.6, heights[i], 3);
+    const bGeo = new THREE.BoxGeometry(2.8, heights[i], 3.2);
     const bMat = new THREE.MeshStandardMaterial({ color: 0x24283b, roughness: 0.8 });
     const building = new THREE.Mesh(bGeo, bMat);
-    building.position.set(-6 + i * 3, heights[i] / 2, -6);
+    building.position.set(-7.5 + i * 3, heights[i] / 2, -7.5);
     group.add(building);
   }
 
-  // Warm Amber Street Lamp
-  const streetLight = new THREE.PointLight(0xffaa00, 4, 25);
-  streetLight.position.set(0, 7, 2);
+  // Warm Amber Street Lamps
+  const streetLight = new THREE.PointLight(0xffaa00, 4.5, 28);
+  streetLight.position.set(0, 7.5, 2);
   group.add(streetLight);
 
-  const poleGeo = new THREE.CylinderGeometry(0.15, 0.15, 7);
+  const poleGeo = new THREE.CylinderGeometry(0.18, 0.18, 7.5);
   const poleMat = new THREE.MeshStandardMaterial({ color: 0x111 });
   const pole = new THREE.Mesh(poleGeo, poleMat);
-  pole.position.set(0, 3.5, 2);
+  pole.position.set(0, 3.75, 2);
   group.add(pole);
 
-  createStageSign("🎤 BLOCK PARTY", 32, 9.5, -25, 0xffaa00);
+  createStageSign("🎤 URBAN PARTY", 25, 10.5, -20, 0xffaa00);
   scene.add(group);
 }
 
-// 4. Reggae Oasis (Sable, palmiers, chill)
+// 4. Reggae Oasis (Sable agrandi, palmiers, chill)
 function buildReggaeOasis() {
   const group = new THREE.Group();
-  group.position.set(35, 0, 25);
+  group.position.set(26, 0, 20);
 
-  // Sand dune floor
-  const sandGeo = new THREE.CylinderGeometry(8.5, 9.5, 1, 24);
+  // Larger sand dune floor
+  const sandGeo = new THREE.CylinderGeometry(11.5, 13, 1, 32);
   const sandMat = new THREE.MeshStandardMaterial({ color: 0x3d3522, roughness: 0.95 });
   const sand = new THREE.Mesh(sandGeo, sandMat);
   sand.position.y = 0.5;
@@ -317,94 +377,95 @@ function buildReggaeOasis() {
 
   // Palm trees
   function createPalm(x, z, h) {
-    const trunkGeo = new THREE.CylinderGeometry(0.2, 0.35, h, 6);
+    const trunkGeo = new THREE.CylinderGeometry(0.25, 0.4, h, 6);
     const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a3728 });
     const trunk = new THREE.Mesh(trunkGeo, trunkMat);
     trunk.position.set(x, h / 2, z);
     trunk.rotation.z = (Math.random() - 0.5) * 0.15;
     group.add(trunk);
 
-    const leavesGeo = new THREE.ConeGeometry(2.4, 1.2, 6);
+    const leavesGeo = new THREE.ConeGeometry(2.8, 1.4, 6);
     const leavesMat = new THREE.MeshStandardMaterial({ color: 0x2ecc71, roughness: 0.6 });
     const leaves = new THREE.Mesh(leavesGeo, leavesMat);
     leaves.position.set(x, h, z);
     group.add(leaves);
   }
 
-  createPalm(-4, -3, 6);
-  createPalm(4, 2, 5.5);
+  createPalm(-5.5, -4, 7);
+  createPalm(5.5, 3, 6.5);
+  createPalm(0, -6, 6);
 
   // Campfire glow
-  const fireLight = new THREE.PointLight(0xf1c40f, 3.5, 20);
+  const fireLight = new THREE.PointLight(0xf1c40f, 4, 24);
   fireLight.position.set(0, 1.5, 0);
   group.add(fireLight);
 
   animatedElements.push((time) => {
-    fireLight.intensity = 3 + Math.sin(time * 8) * 0.8;
+    fireLight.intensity = 3.5 + Math.sin(time * 8) * 0.9;
   });
 
-  createStageSign("🌴 SUNKEN OASIS", 35, 8, 25, 0x2ecc71);
+  createStageSign("🌴 SUNKEN OASIS", 26, 8.5, 20, 0x2ecc71);
   scene.add(group);
 }
 
-// 5. Classical Amphitheater (Colonnes de marbre, dôme & lueur mystique)
+// 5. Classical Amphitheater (Colonnes de marbre agrandies, dôme & lueur mystique)
 function buildClassicalAmphitheater() {
   const group = new THREE.Group();
-  group.position.set(-32, 0, 25);
+  group.position.set(-25, 0, 20);
 
-  // Marble circular base
-  const baseGeo = new THREE.CylinderGeometry(8, 8.5, 1, 24);
+  // Larger Marble circular base
+  const baseGeo = new THREE.CylinderGeometry(11, 12, 1, 32);
   const baseMat = new THREE.MeshStandardMaterial({ color: 0x2c2638, roughness: 0.3 });
   const base = new THREE.Mesh(baseGeo, baseMat);
   base.position.y = 0.5;
   group.add(base);
 
   // Semicircle Marble Columns
-  const radius = 6.5;
-  const colCount = 8;
+  const radius = 8.5;
+  const colCount = 10;
   for (let i = 0; i < colCount; i++) {
     const angle = (Math.PI / (colCount - 1)) * i;
     const x = Math.cos(angle) * radius;
     const z = -Math.sin(angle) * radius;
 
-    const colGeo = new THREE.CylinderGeometry(0.3, 0.35, 6, 12);
+    const colGeo = new THREE.CylinderGeometry(0.35, 0.4, 7, 12);
     const colMat = new THREE.MeshStandardMaterial({ color: 0x7c7294, roughness: 0.2 });
     const col = new THREE.Mesh(colGeo, colMat);
-    col.position.set(x, 3.5, z);
+    col.position.set(x, 4, z);
     group.add(col);
   }
 
   // Soft Purple/Blue Dome Light
-  const domeLight = new THREE.PointLight(0x9b59b6, 3.5, 22);
-  domeLight.position.set(0, 4.5, -2);
+  const domeLight = new THREE.PointLight(0x9b59b6, 4, 26);
+  domeLight.position.set(0, 5, -2);
   group.add(domeLight);
 
-  createStageSign("🎻 CRYSTAL DOME", -32, 8, 25, 0x9b59b6);
+  createStageSign("🎻 CRYSTAL DOME", -25, 8.8, 20, 0x9b59b6);
   scene.add(group);
 }
 
 // 6. Metal & Rock Volcanic Pit
 function buildMetalPit() {
   const group = new THREE.Group();
-  group.position.set(-45, 0, 0);
+  group.position.set(-35, 0, 0);
 
-  // Dark volcanic stone
-  const stoneGeo = new THREE.CylinderGeometry(7, 8, 1, 16);
+  // Dark volcanic stone (Larger)
+  const stoneGeo = new THREE.CylinderGeometry(9.5, 10.5, 1, 20);
   const stoneMat = new THREE.MeshStandardMaterial({ color: 0x181012, roughness: 0.95 });
   const stone = new THREE.Mesh(stoneGeo, stoneMat);
   stone.position.y = 0.5;
   group.add(stone);
 
   // Fiery Pit Light
-  const flameLight = new THREE.PointLight(0xe74c3c, 4, 20);
+  const flameLight = new THREE.PointLight(0xe74c3c, 4.5, 24);
   flameLight.position.set(0, 2, 0);
   group.add(flameLight);
 
   animatedElements.push((time) => {
-    flameLight.intensity = 3.5 + Math.sin(time * 10) * 1.2;
+    flameLight.intensity = 4 + Math.sin(time * 10) * 1.3;
   });
 
-  createStageSign("🔥 VOLCANIC PIT", -45, 7.5, 0, 0xe74c3c);
+  createStageSign("🔥 VOLCANIC PIT", -35, 8, 0, 0xe74c3c);
   scene.add(group);
 }
 
@@ -497,9 +558,9 @@ function createFallbackLabelMaterial(track) {
 function createVinylMesh(track, index, stageTracksCount) {
   const stagePos = track.stage?.position || { x: 0, y: 0, z: 0 };
 
-  // Calculate distributed slot on the stage
+  // Calculate distributed slot on the stage (adapted to larger stage sizes)
   const angle = (index / Math.max(1, stageTracksCount)) * Math.PI * 2;
-  const radius = stageTracksCount > 1 ? 3.5 : 0;
+  const radius = stageTracksCount > 1 ? 4.8 : 0;
   const posX = stagePos.x + Math.cos(angle) * radius;
   const posZ = stagePos.z + Math.sin(angle) * radius;
   const posY = 2.5 + (index % 3) * 0.4;
