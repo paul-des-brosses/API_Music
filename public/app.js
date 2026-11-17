@@ -15,35 +15,31 @@ const STATE = {
   vinylMeshes: []
 };
 
-// Stage Coordinates & Look Targets in World Space (Tighter & Cohesive Layout)
+// Stage Coordinates & Look Targets in World Space (5 Distinct Thematic Stages)
 const STAGE_VIEWS = {
   GLOBAL: {
     cam: { x: 0, y: 62, z: 80 },
     target: { x: 0, y: 0, z: 0 }
   },
   TECHNO: {
-    cam: { x: -25, y: 15, z: -2 },
-    target: { x: -25, y: 3.5, z: -20 }
+    cam: { x: -24, y: 15, z: -2 },
+    target: { x: -24, y: 3.5, z: -18 }
   },
   RAP: {
-    cam: { x: 25, y: 15, z: -2 },
-    target: { x: 25, y: 3.5, z: -20 }
+    cam: { x: 24, y: 15, z: -2 },
+    target: { x: 24, y: 3.5, z: -18 }
   },
   REGGAE: {
-    cam: { x: 26, y: 14, z: 36 },
-    target: { x: 26, y: 3, z: 20 }
+    cam: { x: 25, y: 14, z: 35 },
+    target: { x: 25, y: 3, z: 18 }
   },
   CLASSICAL: {
-    cam: { x: -25, y: 14, z: 36 },
-    target: { x: -25, y: 3, z: 20 }
+    cam: { x: -24, y: 14, z: 35 },
+    target: { x: -24, y: 3, z: 18 }
   },
   ROCK_METAL: {
-    cam: { x: -35, y: 14, z: 16 },
-    target: { x: -35, y: 3, z: 0 }
-  },
-  MAINSTAGE: {
-    cam: { x: 0, y: 18, z: 28 },
-    target: { x: 0, y: 4, z: 0 }
+    cam: { x: -34, y: 14, z: 16 },
+    target: { x: -34, y: 3, z: 0 }
   }
 };
 
@@ -142,8 +138,8 @@ function buildEnvironment() {
   gridHelper.position.y = 0.22;
   scene.add(gridHelper);
 
-  // 5. Build Stages Architecture
-  buildMainstage();
+  // 5. Build Stages & Central Plaza Architecture
+  buildCentralPlaza();
   buildTechnoWarehouse();
   buildRapCity();
   buildReggaeOasis();
@@ -152,53 +148,97 @@ function buildEnvironment() {
 }
 
 /* ==========================================================================
-   STAGE ARCHITECTURES
+   STAGE ARCHITECTURES (5 THEMATIC STAGES & CENTRAL PLAZA)
    ========================================================================== */
 
-// 1. Central Mainstage (Grand arche centrale & grand écran)
-function buildMainstage() {
+// Central Festival Plaza & Landmark Totem (Connects all 5 stages)
+function buildCentralPlaza() {
   const group = new THREE.Group();
   group.position.set(0, 0, 0);
 
-  // Larger Stage Platform
-  const baseGeo = new THREE.BoxGeometry(26, 1.5, 17);
-  const baseMat = new THREE.MeshStandardMaterial({ color: 0x222636, roughness: 0.4 });
-  const base = new THREE.Mesh(baseGeo, baseMat);
-  base.position.y = 0.75;
-  base.receiveShadow = true;
-  group.add(base);
-
-  // Big Curved LED Screen Backdrop
-  const screenGeo = new THREE.CylinderGeometry(12, 12, 7.5, 32, 1, true, -Math.PI / 2.7, Math.PI / 1.35);
-  const screenMat = new THREE.MeshBasicMaterial({
-    color: 0x111628,
-    side: THREE.DoubleSide
+  // Circular courtyard floor
+  const plazaGeo = new THREE.CylinderGeometry(8.5, 9.2, 0.4, 32);
+  const plazaMat = new THREE.MeshStandardMaterial({
+    color: 0x181d2a,
+    roughness: 0.5,
+    metalness: 0.3
   });
-  const screen = new THREE.Mesh(screenGeo, screenMat);
-  screen.position.set(0, 5.2, -4.5);
-  group.add(screen);
+  const plaza = new THREE.Mesh(plazaGeo, plazaMat);
+  plaza.position.y = 0.2;
+  plaza.receiveShadow = true;
+  group.add(plaza);
 
-  // Spotlights pointing skywards
-  const spot1 = new THREE.SpotLight(0xff007f, 9, 45, Math.PI / 6, 0.4);
-  spot1.position.set(-10, 1.5, 6);
-  spot1.target.position.set(-15, 30, -5);
-  group.add(spot1);
-  group.add(spot1.target);
+  // Outer glowing ring
+  const ringGeo = new THREE.RingGeometry(8.6, 9.0, 32);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: 0x00f0ff,
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.8
+  });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = 0.42;
+  group.add(ring);
 
-  const spot2 = new THREE.SpotLight(0x00f0ff, 9, 45, Math.PI / 6, 0.4);
-  spot2.position.set(10, 1.5, 6);
-  spot2.target.position.set(15, 30, -5);
-  group.add(spot2);
-  group.add(spot2.target);
+  // Central Crystalline Sound Obelisk / Totem
+  const totemGeo = new THREE.OctahedronGeometry(1.6, 0);
+  const totemMat = new THREE.MeshStandardMaterial({
+    color: 0x00f0ff,
+    emissive: 0x0088ff,
+    emissiveIntensity: 0.6,
+    roughness: 0.1,
+    metalness: 0.9,
+    wireframe: true
+  });
+  const totem = new THREE.Mesh(totemGeo, totemMat);
+  totem.position.y = 3.5;
+  group.add(totem);
 
-  // Sweeping festival lights animation
+  const totemCoreGeo = new THREE.SphereGeometry(0.8, 16, 16);
+  const totemCoreMat = new THREE.MeshBasicMaterial({ color: 0xff007f });
+  const totemCore = new THREE.Mesh(totemCoreGeo, totemCoreMat);
+  totemCore.position.y = 3.5;
+  group.add(totemCore);
+
+  // Plaza Ambient Uplight
+  const plazaLight = new THREE.PointLight(0x00f0ff, 3.5, 20);
+  plazaLight.position.set(0, 4, 0);
+  group.add(plazaLight);
+
+  // Slow rotation of central crystal totem
   animatedElements.push((time) => {
-    spot1.target.position.x = -15 + Math.sin(time * 2) * 9;
-    spot2.target.position.x = 15 - Math.sin(time * 2) * 9;
+    totem.rotation.y = time * 0.8;
+    totem.rotation.x = Math.sin(time * 0.5) * 0.2;
+    ring.rotation.z = time * 0.2;
   });
 
-  // Stage Title Marker
-  createStageSign("🎪 MAINSTAGE", 0, 9.8, -4.5, 0xf39c12);
+  // Pathway strips radiating out to the 5 stages
+  const stageTargets = [
+    { x: -24, z: -18 }, // Techno
+    { x: 24, z: -18 },  // Rap
+    { x: 25, z: 18 },   // Reggae
+    { x: -24, z: 18 },  // Classical
+    { x: -34, z: 0 }    // Metal
+  ];
+
+  for (const st of stageTargets) {
+    const dx = st.x;
+    const dz = st.z;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    const angle = Math.atan2(dz, dx);
+
+    const pathGeo = new THREE.PlaneGeometry(dist - 8, 1.2);
+    const pathMat = new THREE.MeshBasicMaterial({
+      color: 0x1d273a,
+      side: THREE.DoubleSide
+    });
+    const path = new THREE.Mesh(pathGeo, pathMat);
+    path.rotation.x = -Math.PI / 2;
+    path.rotation.z = -angle;
+    path.position.set((dx / 2), 0.22, (dz / 2));
+    group.add(path);
+  }
 
   scene.add(group);
 }
@@ -646,10 +686,10 @@ function createVinylMesh(track, index, stageTracksCount) {
 function renderTracksTo3D(tracks) {
   clearVinyls();
 
-  // Group tracks by stage to layout nicely
+  // Group tracks by stage to layout nicely across the 5 thematic stages
   const stageGroups = {};
   for (const track of tracks) {
-    const stageId = track.stage?.id || 'MAINSTAGE';
+    const stageId = track.stage?.id || 'REGGAE';
     if (!stageGroups[stageId]) stageGroups[stageId] = [];
     stageGroups[stageId].push(track);
   }

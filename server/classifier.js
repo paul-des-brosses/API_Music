@@ -8,7 +8,7 @@ export const STAGES = {
     id: "TECHNO",
     name: "The Neon Warehouse",
     subtitle: "Rave & Electronic Bunker",
-    position: { x: -25, y: 0, z: -20 },
+    position: { x: -24, y: 0, z: -18 },
     color: "#00f0ff",
     secondaryColor: "#ff007f",
     ambientLight: 0x00f0ff,
@@ -18,7 +18,7 @@ export const STAGES = {
     id: "RAP",
     name: "The Urban Party",
     subtitle: "Urban Skyline & Hip-Hop",
-    position: { x: 25, y: 0, z: -20 },
+    position: { x: 24, y: 0, z: -18 },
     color: "#ffaa00",
     secondaryColor: "#ff4400",
     ambientLight: 0xffaa00,
@@ -28,7 +28,7 @@ export const STAGES = {
     id: "REGGAE",
     name: "Sunken Beach Oasis",
     subtitle: "Chill & Roots Island",
-    position: { x: 26, y: 0, z: 20 },
+    position: { x: 25, y: 0, z: 18 },
     color: "#2ecc71",
     secondaryColor: "#f1c40f",
     ambientLight: 0x2ecc71,
@@ -38,7 +38,7 @@ export const STAGES = {
     id: "CLASSICAL",
     name: "The Crystal Amphitheater",
     subtitle: "Symphonic & Ambient Dome",
-    position: { x: -25, y: 0, z: 20 },
+    position: { x: -24, y: 0, z: 18 },
     color: "#9b59b6",
     secondaryColor: "#3498db",
     ambientLight: 0x9b59b6,
@@ -48,21 +48,11 @@ export const STAGES = {
     id: "ROCK_METAL",
     name: "The Volcanic Pit",
     subtitle: "Heavy Metal & Hard Rock",
-    position: { x: -35, y: 0, z: 0 },
+    position: { x: -34, y: 0, z: 0 },
     color: "#e74c3c",
     secondaryColor: "#c0392b",
     ambientLight: 0xe74c3c,
     description: "Lave en fusion, structures métalliques rouillées et pyrotechnie. Scène rock et metal."
-  },
-  MAINSTAGE: {
-    id: "MAINSTAGE",
-    name: "Mainstage Odyssey",
-    subtitle: "Pop, Indie & Divers",
-    position: { x: 0, y: 0, z: 0 },
-    color: "#f39c12",
-    secondaryColor: "#e67e22",
-    ambientLight: 0xffffff,
-    description: "L'arche centrale du festival. Scène éclectique pour la pop, l'indie et les grands classiques."
   }
 };
 
@@ -79,13 +69,14 @@ const GENRE_RULES = [
     stage: "RAP",
     keywords: [
       "rap", "hip-hop", "hip hop", "french rap", "rap francais", "trap",
-      "drill", "boom bap", "cloud rap", "r&b", "rnb", "urban", "grime"
+      "drill", "boom bap", "cloud rap", "r&b", "rnb", "urban", "grime", "pop rap"
     ]
   },
   {
     stage: "REGGAE",
     keywords: [
-      "reggae", "dub", "roots reggae", "ska", "dancehall", "ragga", "lovers rock", "chillout", "calypso"
+      "reggae", "dub", "roots reggae", "ska", "dancehall", "ragga", "lovers rock",
+      "chillout", "calypso", "indie", "acoustic", "folk", "soul", "funk", "pop"
     ]
   },
   {
@@ -99,13 +90,7 @@ const GENRE_RULES = [
     stage: "ROCK_METAL",
     keywords: [
       "metal", "heavy metal", "rock", "hard rock", "punk", "metalcore",
-      "death metal", "black metal", "grunge", "thrash metal", "nu metal"
-    ]
-  },
-  {
-    stage: "MAINSTAGE",
-    keywords: [
-      "pop", "indie", "alternative", "singer-songwriter", "folk", "soul", "funk", "disco"
+      "death metal", "black metal", "grunge", "thrash metal", "nu metal", "indie rock"
     ]
   }
 ];
@@ -205,7 +190,7 @@ export function classifyTrack(artistName, tags = []) {
     }
   }
 
-  let bestStage = "MAINSTAGE";
+  let bestStage = "REGGAE";
   let maxScore = 0;
 
   for (const [stage, score] of Object.entries(scores)) {
