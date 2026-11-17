@@ -147,7 +147,7 @@ export const KNOWN_ARTISTS = {
   "biga ranx": "REGGAE",
   "biga*ranx": "REGGAE",
   
-  // Classical / Symphonic
+  // Classical / Symphonic / Film Scores
   "wolfgang amadeus mozart": "CLASSICAL",
   "mozart": "CLASSICAL",
   "ludwig van beethoven": "CLASSICAL",
@@ -159,6 +159,8 @@ export const KNOWN_ARTISTS = {
   "frederic chopin": "CLASSICAL",
   "antonio vivaldi": "CLASSICAL",
   "vivaldi": "CLASSICAL",
+  "ludwig göransson": "CLASSICAL",
+  "ludwig goransson": "CLASSICAL",
   
   // Metal / Rock
   "gojira": "ROCK_METAL",
