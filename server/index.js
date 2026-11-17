@@ -312,16 +312,15 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Vendor scripts (Three.js and OrbitControls directly from node_modules)
-app.get("/vendor/three.module.js", (req, res) => {
-  res.sendFile(path.join(rootDir, "node_modules", "three", "build", "three.module.js"));
-});
-
-app.get("/vendor/OrbitControls.js", (req, res) => {
-  res.sendFile(
-    path.join(rootDir, "node_modules", "three", "examples", "jsm", "controls", "OrbitControls.js")
-  );
-});
+// Serve Three.js build files and addons with correct MIME types
+app.use(
+  "/vendor/three/addons",
+  express.static(path.join(rootDir, "node_modules", "three", "examples", "jsm"))
+);
+app.use(
+  "/vendor/three",
+  express.static(path.join(rootDir, "node_modules", "three", "build"))
+);
 
 // Serve frontend static assets from public/
 app.use(express.static(path.join(rootDir, "public")));
