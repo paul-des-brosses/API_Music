@@ -62,21 +62,20 @@ const GENRE_RULES = [
     keywords: [
       "techno", "electro", "electronic", "hardtek", "frenchcore", "trance",
       "edm", "house", "acid", "drum and bass", "dnb", "synthwave", "gabber",
-      "dance", "dubstep", "industrial", "idm", "ambient techno"
+      "dance", "dubstep", "industrial", "idm", "ambient techno", "hardstyle"
     ]
   },
   {
     stage: "RAP",
     keywords: [
-      "rap", "hip-hop", "hip hop", "french rap", "rap francais", "trap",
+      "rap", "hip-hop", "hip hop", "french rap", "rap francais", "rap fr", "trap",
       "drill", "boom bap", "cloud rap", "r&b", "rnb", "urban", "grime", "pop rap"
     ]
   },
   {
     stage: "REGGAE",
     keywords: [
-      "reggae", "dub", "roots reggae", "ska", "dancehall", "ragga", "lovers rock",
-      "chillout", "calypso", "indie", "acoustic", "folk", "soul", "funk", "pop"
+      "reggae", "dub", "roots reggae", "ska", "dancehall", "ragga", "lovers rock"
     ]
   },
   {
@@ -95,8 +94,9 @@ const GENRE_RULES = [
   }
 ];
 
-// Fallback known artists dictionary to guarantee instant, accurate placement
+// Reference known artists dictionary to guarantee instant, 100% accurate placement
 export const KNOWN_ARTISTS = {
+  // Techno / Electronic
   "billx": "TECHNO",
   "billx et gargäntua": "TECHNO",
   "gargäntua": "TECHNO",
@@ -107,7 +107,15 @@ export const KNOWN_ARTISTS = {
   "gesaffelstein": "TECHNO",
   "justice": "TECHNO",
   "around the world": "TECHNO",
+  "jeckyll": "TECHNO",
+  "jeckyll & hyde": "TECHNO",
   
+  // Rap / Urban
+  "plk": "RAP",
+  "werenoi": "RAP",
+  "oboy": "RAP",
+  "orelsan": "RAP",
+  "orelsan et sdm": "RAP",
   "vald": "RAP",
   "sdm": "RAP",
   "luv resval": "RAP",
@@ -116,16 +124,30 @@ export const KNOWN_ARTISTS = {
   "freeze corleone": "RAP",
   "jul": "RAP",
   "nekfeu": "RAP",
+  "ninho": "RAP",
+  "gazo": "RAP",
+  "tiakola": "RAP",
+  "sch": "RAP",
+  "dinos": "RAP",
+  "josman": "RAP",
+  "laylow": "RAP",
+  "hamza": "RAP",
   "eminem": "RAP",
   "travis scott": "RAP",
   "kendrick lamar": "RAP",
   
+  // Reggae / Dub (Codé en dur comme demandé)
   "bob marley": "REGGAE",
   "bob marley & the wailers": "REGGAE",
+  "danakil": "REGGAE",
+  "yaniss odua": "REGGAE",
+  "cozik": "REGGAE",
   "tiken jah fakoly": "REGGAE",
   "dub inc": "REGGAE",
-  "danakil": "REGGAE",
+  "biga ranx": "REGGAE",
+  "biga*ranx": "REGGAE",
   
+  // Classical / Symphonic
   "wolfgang amadeus mozart": "CLASSICAL",
   "mozart": "CLASSICAL",
   "ludwig van beethoven": "CLASSICAL",
@@ -135,7 +157,10 @@ export const KNOWN_ARTISTS = {
   "hans zimmer": "CLASSICAL",
   "chopin": "CLASSICAL",
   "frederic chopin": "CLASSICAL",
+  "antonio vivaldi": "CLASSICAL",
+  "vivaldi": "CLASSICAL",
   
+  // Metal / Rock
   "gojira": "ROCK_METAL",
   "metallica": "ROCK_METAL",
   "iron maiden": "ROCK_METAL",
@@ -220,45 +245,35 @@ export function classifyTrack(artistName, trackName = "", tags = []) {
   if (normalizedTitle.includes("freestyle") || normalizedTitle.includes("feat") || normalizedTitle.includes("ft.")) {
     scores.RAP += 2;
   }
-  if (normalizedTitle.includes("acoustic") || normalizedTitle.includes("unplugged")) {
-    scores.REGGAE += 2;
-  }
   if (normalizedTitle.includes("symphony") || normalizedTitle.includes("concerto") || normalizedTitle.includes("orchestra")) {
     scores.CLASSICAL += 4;
   }
 
-  // PRIORITY RULE: "Dès qu'un morceau est marqué reggae et autre chose il va sur l'oasis reggae."
-  // If REGGAE has any tag or clue, it takes absolute precedence over all other stages!
-  let bestStage = "REGGAE";
-  let confidence = 20;
+  // Determine stage strictly with highest score across all 5 genres
+  let bestStage = "RAP"; // Default fallback if zero genre matches
+  let maxScore = 0;
+  let secondMaxScore = 0;
 
-  if (scores.REGGAE > 0) {
-    bestStage = "REGGAE";
-    confidence = Math.max(85, Math.min(95, 60 + scores.REGGAE * 8));
-  } else {
-    // Normal highest score determination if not reggae
-    let maxScore = 0;
-    let secondMaxScore = 0;
-
-    for (const [stage, score] of Object.entries(scores)) {
-      if (score > maxScore) {
-        secondMaxScore = maxScore;
-        maxScore = score;
-        bestStage = stage;
-      } else if (score > secondMaxScore) {
-        secondMaxScore = score;
-      }
+  for (const [stage, score] of Object.entries(scores)) {
+    if (score > maxScore) {
+      secondMaxScore = maxScore;
+      maxScore = score;
+      bestStage = stage;
+    } else if (score > secondMaxScore) {
+      secondMaxScore = score;
     }
+  }
 
-    if (maxScore > 0) {
-      const margin = maxScore - secondMaxScore;
-      confidence = Math.min(92, Math.max(45, 50 + margin * 8 + maxScore * 2));
-    }
+  // Calculate confidence score (25 to 95) based on score margin
+  let confidence = 25;
+  if (maxScore > 0) {
+    const margin = maxScore - secondMaxScore;
+    confidence = Math.min(95, Math.max(50, 55 + margin * 8 + maxScore * 2));
   }
 
   return {
     stage: STAGES[bestStage],
     confidence,
-    matchType: (scores.REGGAE > 0 || bestStage !== "REGGAE") ? "TAG_MATCH" : "FALLBACK"
+    matchType: maxScore > 0 ? "TAG_MATCH" : "FALLBACK"
   };
 }
