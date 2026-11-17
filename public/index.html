@@ -139,12 +139,24 @@
     </div>
   </div>
 
-  <!-- Loading Screen -->
+  <!-- Loading Screen (Cyberpunk / Festival Gate) -->
   <div id="loader" class="loader-overlay">
     <div class="loader-box">
-      <div class="loader-spinner"></div>
+      <div class="loader-soundwave">
+        <span class="bar bar-1"></span>
+        <span class="bar bar-2"></span>
+        <span class="bar bar-3"></span>
+        <span class="bar bar-4"></span>
+        <span class="bar bar-5"></span>
+      </div>
       <h2>Ouverture des portes du festival...</h2>
-      <p id="loader-sub">Connexion sécurisée au serveur proxy Last.fm</p>
+      <p id="loader-sub">Initialisation de l'univers 3D...</p>
+      
+      <!-- Progress Bar -->
+      <div class="progress-bar-container">
+        <div id="loader-progress" class="progress-bar-fill"></div>
+      </div>
+      <span id="loader-percentage" class="loader-percentage">0%</span>
     </div>
   </div>
 

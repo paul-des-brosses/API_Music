@@ -485,12 +485,12 @@ body, html {
   left: 0;
   width: 100%;
   height: 100%;
-  background: var(--bg-dark);
+  background: radial-gradient(circle at center, #111628 0%, #060810 100%);
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .loader-box {
@@ -498,17 +498,36 @@ body, html {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
+  width: 90%;
+  max-width: 380px;
 }
 
-.loader-spinner {
-  width: 50px;
-  height: 50px;
-  border: 3px solid rgba(0, 240, 255, 0.15);
-  border-top-color: var(--accent-cyan);
-  border-right-color: var(--accent-magenta);
-  border-radius: 50%;
-  animation: spin 1s infinite linear;
+/* Soundwave Equalizer Animation */
+.loader-soundwave {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 48px;
+  margin-bottom: 8px;
+}
+
+.loader-soundwave .bar {
+  width: 6px;
+  background: linear-gradient(to top, #00f0ff, #ff007f);
+  border-radius: 4px;
+  animation: equalize 1s infinite ease-in-out alternate;
+}
+
+.loader-soundwave .bar-1 { height: 18px; animation-delay: 0.1s; }
+.loader-soundwave .bar-2 { height: 36px; animation-delay: 0.3s; }
+.loader-soundwave .bar-3 { height: 48px; animation-delay: 0.2s; }
+.loader-soundwave .bar-4 { height: 28px; animation-delay: 0.4s; }
+.loader-soundwave .bar-5 { height: 20px; animation-delay: 0.15s; }
+
+@keyframes equalize {
+  0% { transform: scaleY(0.3); opacity: 0.6; }
+  100% { transform: scaleY(1); opacity: 1; filter: drop-shadow(0 0 8px #00f0ff); }
 }
 
 .loader-box h2 {
@@ -516,11 +535,40 @@ body, html {
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 0.5px;
+  color: #fff;
 }
 
 .loader-box p {
   font-size: 13px;
   color: var(--text-dim);
+  min-height: 20px;
+}
+
+/* Progress Bar */
+.progress-bar-container {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.progress-bar-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #00f0ff, #ff007f);
+  border-radius: 10px;
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.8);
+  transition: width 0.3s ease;
+}
+
+.loader-percentage {
+  font-family: var(--font-heading);
+  font-size: 12px;
+  color: var(--accent-cyan);
+  font-weight: 700;
 }
 
 /* Animations & Utilities */

@@ -610,9 +610,20 @@ const nowTitle = document.getElementById('now-title');
 const alertBanner = document.getElementById('alert-banner');
 const alertMessage = document.getElementById('alert-message');
 const loader = document.getElementById('loader');
+const loaderSub = document.getElementById('loader-sub');
+const loaderProgress = document.getElementById('loader-progress');
+const loaderPercentage = document.getElementById('loader-percentage');
+
+function setLoaderStep(percent, message) {
+  if (loaderProgress) loaderProgress.style.width = `${percent}%`;
+  if (loaderPercentage) loaderPercentage.textContent = `${percent}%`;
+  if (loaderSub && message) loaderSub.textContent = message;
+}
 
 async function fetchTracks(simulateError = false) {
   try {
+    setLoaderStep(65, 'Connexion au proxy Last.fm...');
+
     const url = simulateError
       ? '/api/recent-tracks?simulate_error=true'
       : '/api/recent-tracks';
@@ -623,6 +634,8 @@ async function fetchTracks(simulateError = false) {
     if (!res.ok && !data.fromCache) {
       throw new Error(data.error || 'Erreur de connexion au serveur.');
     }
+
+    setLoaderStep(85, 'Génération des vinyles 3D...');
 
     STATE.tracks = data.tracks || [];
     STATE.stages = data.stages || {};
@@ -656,10 +669,13 @@ async function fetchTracks(simulateError = false) {
     // Render in 3D
     renderTracksTo3D(STATE.tracks);
 
-    // Hide loader
+    // Complete loading sequence
+    setLoaderStep(100, 'Bienvenue à Soundland 3D !');
     if (loader) {
-      loader.style.opacity = '0';
-      setTimeout(() => loader.classList.add('hidden'), 500);
+      setTimeout(() => {
+        loader.style.opacity = '0';
+        setTimeout(() => loader.classList.add('hidden'), 600);
+      }, 300);
     }
   } catch (err) {
     console.error('Fetch error:', err);
@@ -902,7 +918,9 @@ function initEvents() {
 /* ==========================================================================
    BOOTSTRAP
    ========================================================================== */
+setLoaderStep(20, 'Initialisation du moteur Three.js...');
 buildEnvironment();
+setLoaderStep(45, 'Construction des scènes et éclairages...');
 initEvents();
 fetchTracks(false);
 animate();

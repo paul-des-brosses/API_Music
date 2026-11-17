@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-import { classifyTrack, STAGES } from "./classifier.js";
+import { classifyTrack, STAGES, KNOWN_ARTISTS } from "./classifier.js";
 
 dotenv.config();
 
@@ -81,14 +81,15 @@ app.get("/api/image-proxy", async (req, res) => {
 });
 
 /**
- * Fetch top tags for an artist from Last.fm
+ * Fetch top tags for an artist from Last.fm (fast non-blocking lookup)
  */
 async function fetchArtistTags(artist) {
   if (!artist || !LASTFM_API_KEY) return [];
   const normalized = artist.trim().toLowerCase();
 
-  if (artistTagsCache.has(normalized)) {
-    return artistTagsCache.get(normalized);
+  // If already in known artists or cache, return immediately (0ms)
+  if (KNOWN_ARTISTS[normalized] || artistTagsCache.has(normalized)) {
+    return artistTagsCache.get(normalized) || [];
   }
 
   try {
@@ -97,7 +98,7 @@ async function fetchArtistTags(artist) {
     )}&api_key=${LASTFM_API_KEY}&format=json&autocorrect=1`;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
+    const timeout = setTimeout(() => controller.abort(), 1200);
 
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeout);
@@ -112,7 +113,8 @@ async function fetchArtistTags(artist) {
     artistTagsCache.set(normalized, tagList);
     return tagList;
   } catch (err) {
-    console.warn(`[Tags] Could not fetch tags for ${artist}:`, err.message);
+    // Graceful fallback: classify without tags rather than stalling
+    artistTagsCache.set(normalized, []);
     return [];
   }
 }

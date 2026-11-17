@@ -111,7 +111,7 @@ const GENRE_RULES = [
 ];
 
 // Fallback known artists dictionary to guarantee instant, accurate placement
-const KNOWN_ARTISTS = {
+export const KNOWN_ARTISTS = {
   "billx": "TECHNO",
   "billx et gargäntua": "TECHNO",
   "gargäntua": "TECHNO",
@@ -121,6 +121,7 @@ const KNOWN_ARTISTS = {
   "paul kalkbrenner": "TECHNO",
   "gesaffelstein": "TECHNO",
   "justice": "TECHNO",
+  "around the world": "TECHNO",
   
   "vald": "RAP",
   "sdm": "RAP",
