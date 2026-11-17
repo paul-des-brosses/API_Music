@@ -1,0 +1,19 @@
+# Environment variables (CRITICAL: Do NOT remove .env - keeps API key off GitHub)
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Production build
+dist/
+build/
+
+# OS and Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
