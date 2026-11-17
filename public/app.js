@@ -167,50 +167,23 @@ function buildCentralPlaza() {
   plaza.receiveShadow = true;
   group.add(plaza);
 
-  // Outer glowing ring
+  // Outer subtle glowing boundary ring
   const ringGeo = new THREE.RingGeometry(8.6, 9.0, 32);
   const ringMat = new THREE.MeshBasicMaterial({
     color: 0x00f0ff,
     side: THREE.DoubleSide,
     transparent: true,
-    opacity: 0.8
+    opacity: 0.6
   });
   const ring = new THREE.Mesh(ringGeo, ringMat);
   ring.rotation.x = -Math.PI / 2;
   ring.position.y = 0.42;
   group.add(ring);
 
-  // Central Crystalline Sound Obelisk / Totem
-  const totemGeo = new THREE.OctahedronGeometry(1.6, 0);
-  const totemMat = new THREE.MeshStandardMaterial({
-    color: 0x00f0ff,
-    emissive: 0x0088ff,
-    emissiveIntensity: 0.6,
-    roughness: 0.1,
-    metalness: 0.9,
-    wireframe: true
-  });
-  const totem = new THREE.Mesh(totemGeo, totemMat);
-  totem.position.y = 3.5;
-  group.add(totem);
-
-  const totemCoreGeo = new THREE.SphereGeometry(0.8, 16, 16);
-  const totemCoreMat = new THREE.MeshBasicMaterial({ color: 0xff007f });
-  const totemCore = new THREE.Mesh(totemCoreGeo, totemCoreMat);
-  totemCore.position.y = 3.5;
-  group.add(totemCore);
-
-  // Plaza Ambient Uplight
-  const plazaLight = new THREE.PointLight(0x00f0ff, 3.5, 20);
-  plazaLight.position.set(0, 4, 0);
+  // Plaza Ambient Soft Uplight
+  const plazaLight = new THREE.PointLight(0x00f0ff, 2.5, 18);
+  plazaLight.position.set(0, 1.5, 0);
   group.add(plazaLight);
-
-  // Slow rotation of central crystal totem
-  animatedElements.push((time) => {
-    totem.rotation.y = time * 0.8;
-    totem.rotation.x = Math.sin(time * 0.5) * 0.2;
-    ring.rotation.z = time * 0.2;
-  });
 
   // Pathway strips radiating out to the 5 equidistant stages
   const stageTargets = [
@@ -670,9 +643,13 @@ function createVinylMesh(track, index, stageTracksCount) {
     vinylGroup.scale.set(1.25, 1.25, 1.25);
   }
 
-  // Metadata attached to user data for Raycasting
+  // Metadata attached to user data for Raycasting & orbital carousel rotation
   vinylGroup.userData = {
     track,
+    baseAngle: angle,
+    radius,
+    stageCenterX: stagePos.x,
+    stageCenterZ: stagePos.z,
     baseY: posY,
     baseScale: track.nowPlaying ? 1.25 : 1.0,
     discMesh: disc
@@ -938,10 +915,19 @@ function animate() {
     fn(time);
   }
 
-  // Rotate & float vinyl records
+  // Rotate vinyl carousel around each stage (1 full revolution in 45s) & float vinyls
+  const orbitAngle = (time / 45) * Math.PI * 2;
   for (const vg of STATE.vinylMeshes) {
+    const u = vg.userData;
+    if (u.radius > 0) {
+      const currentAngle = u.baseAngle + orbitAngle;
+      vg.position.x = u.stageCenterX + Math.cos(currentAngle) * u.radius;
+      vg.position.z = u.stageCenterZ + Math.sin(currentAngle) * u.radius;
+    }
+
+    // Individual disc self-spin and gentle floating bob
     vg.rotation.y += 0.015;
-    vg.position.y = vg.userData.baseY + Math.sin(time * 2.5 + vg.position.x) * 0.12;
+    vg.position.y = u.baseY + Math.sin(time * 2.5 + vg.position.x) * 0.12;
   }
 
   // Handle camera fly-to transition

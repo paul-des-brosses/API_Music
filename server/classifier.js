@@ -227,37 +227,38 @@ export function classifyTrack(artistName, trackName = "", tags = []) {
     scores.CLASSICAL += 4;
   }
 
-  // PRIORITY RULE: "reggae > rap (si un morceau a les 2 ça va en rap)"
-  // If both RAP and REGGAE have points, RAP takes precedence
-  if (scores.RAP > 0 && scores.REGGAE > 0) {
-    scores.RAP += 5;
-  }
-
-  // Determine stage with highest score
+  // PRIORITY RULE: "Dès qu'un morceau est marqué reggae et autre chose il va sur l'oasis reggae."
+  // If REGGAE has any tag or clue, it takes absolute precedence over all other stages!
   let bestStage = "REGGAE";
-  let maxScore = 0;
-  let secondMaxScore = 0;
+  let confidence = 20;
 
-  for (const [stage, score] of Object.entries(scores)) {
-    if (score > maxScore) {
-      secondMaxScore = maxScore;
-      maxScore = score;
-      bestStage = stage;
-    } else if (score > secondMaxScore) {
-      secondMaxScore = score;
+  if (scores.REGGAE > 0) {
+    bestStage = "REGGAE";
+    confidence = Math.max(85, Math.min(95, 60 + scores.REGGAE * 8));
+  } else {
+    // Normal highest score determination if not reggae
+    let maxScore = 0;
+    let secondMaxScore = 0;
+
+    for (const [stage, score] of Object.entries(scores)) {
+      if (score > maxScore) {
+        secondMaxScore = maxScore;
+        maxScore = score;
+        bestStage = stage;
+      } else if (score > secondMaxScore) {
+        secondMaxScore = score;
+      }
     }
-  }
 
-  // Calculate confidence score (20 to 92) based on score margin
-  let confidence = 20; // Default fallback confidence
-  if (maxScore > 0) {
-    const margin = maxScore - secondMaxScore;
-    confidence = Math.min(92, Math.max(45, 50 + margin * 8 + maxScore * 2));
+    if (maxScore > 0) {
+      const margin = maxScore - secondMaxScore;
+      confidence = Math.min(92, Math.max(45, 50 + margin * 8 + maxScore * 2));
+    }
   }
 
   return {
     stage: STAGES[bestStage],
     confidence,
-    matchType: maxScore > 0 ? "TAG_MATCH" : "FALLBACK"
+    matchType: (scores.REGGAE > 0 || bestStage !== "REGGAE") ? "TAG_MATCH" : "FALLBACK"
   };
 }
