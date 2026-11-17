@@ -227,28 +227,44 @@ function buildTechnoWarehouse() {
   floor.position.y = 0.4;
   group.add(floor);
 
-  // Cyberpunk Neon Trusses
-  for (let x = -9.5; x <= 9.5; x += 19) {
-    const pillarGeo = new THREE.CylinderGeometry(0.35, 0.35, 10.5);
-    const pillarMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
-    const p1 = new THREE.Mesh(pillarGeo, pillarMat);
-    p1.position.set(x, 5.25, -9.5);
-    group.add(p1);
+  // Cyberpunk Neon U-Shaped Trusses Structure (Open in front for 100% unobstructed view)
+  const pillarGeo = new THREE.CylinderGeometry(0.35, 0.35, 10.5);
+  const pillarMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
 
-    const p2 = new THREE.Mesh(pillarGeo, pillarMat);
-    p2.position.set(x, 5.25, 9.5);
-    group.add(p2);
+  // 4 Corner Pillars: Left-Back, Right-Back, Left-Front, Right-Front (flanked to the sides)
+  const pillarPositions = [
+    { x: -9.5, z: -9.5 }, // Left-Back
+    { x: 9.5, z: -9.5 },  // Right-Back
+    { x: -9.5, z: 8.5 },  // Left-Front (on the far left flank)
+    { x: 9.5, z: 8.5 }   // Right-Front (on the far right flank)
+  ];
+
+  for (const pos of pillarPositions) {
+    const p = new THREE.Mesh(pillarGeo, pillarMat);
+    p.position.set(pos.x, 5.25, pos.z);
+    group.add(p);
   }
 
-  // Cross Beams
-  const beamGeo = new THREE.BoxGeometry(19.6, 0.4, 0.4);
   const beamMat = new THREE.MeshBasicMaterial({ color: 0xff007f });
-  const b1 = new THREE.Mesh(beamGeo, beamMat);
-  b1.position.set(0, 10.5, -9.5);
-  group.add(b1);
-  const b2 = new THREE.Mesh(beamGeo, beamMat);
-  b2.position.set(0, 10.5, 9.5);
-  group.add(b2);
+
+  // 1. Back Cross Beam (connecting Left-Back to Right-Back above sound system)
+  const backBeamGeo = new THREE.BoxGeometry(19.4, 0.4, 0.4);
+  const backBeam = new THREE.Mesh(backBeamGeo, beamMat);
+  backBeam.position.set(0, 10.5, -9.5);
+  group.add(backBeam);
+
+  // 2. Left Lateral Beam (along Z connecting Left-Back to Left-Front)
+  const sideBeamGeo = new THREE.BoxGeometry(0.4, 0.4, 18.0);
+  const leftBeam = new THREE.Mesh(sideBeamGeo, beamMat);
+  leftBeam.position.set(-9.5, 10.5, -0.5);
+  group.add(leftBeam);
+
+  // 3. Right Lateral Beam (along Z connecting Right-Back to Right-Front)
+  const rightBeam = new THREE.Mesh(sideBeamGeo, beamMat);
+  rightBeam.position.set(9.5, 10.5, -0.5);
+  group.add(rightBeam);
+
+  // FRONT IS A 100% OPEN "U" SHAPE -> ZERO HORIZONTAL BARS IN CAMERA VIEW!
 
   /* --- MASSIVE SPEAKER WALL (Sound System d'enceintes techno en fond) --- */
   const speakerWallGroup = new THREE.Group();
@@ -334,7 +350,8 @@ function buildTechnoWarehouse() {
     }
   });
 
-  createStageSign("⚡ RAVE BUNKER", 0, 11, -26, 0x00f0ff);
+  // Stage title placed high above the back sound system to keep the view totally clear
+  createStageSign("⚡ RAVE BUNKER", 0, 12.5, -34, 0x00f0ff);
   scene.add(group);
 }
 
