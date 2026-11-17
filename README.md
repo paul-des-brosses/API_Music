@@ -10,12 +10,12 @@ Plutôt qu'une simple liste plate d'albums, **Soundland 3D** transforme les dern
 
 Chaque morceau écouté récemment est automatiquement analysé, catégorisé selon son genre/style musical, et matérialisé sous la forme d'un **disque vinyle holographique 3D flottant** au-dessus de sa scène dédiée :
 
-* **⚡ The Neon Warehouse (Bunker Rave) :** Pour l'électro, la techno, le hardtek, la trance et le frenchcore (lasers néons, stroboscopes réactifs).
-* **🎤 The Block Party (Rap City) :** Pour le rap, hip-hop, trap et drill (briques, silhouettes de buildings new-yorkais et lampadaire ambré).
+* **⚡ The Neon Warehouse (Bunker Rave) :** Pour l'électro, la techno, le hardtek, la trance et le frenchcore (lasers néons, stroboscopes réactifs et mur de son Sound System).
+* **🎤 The Urban Party :** Pour le rap, hip-hop, trap et drill (briques, silhouettes de buildings new-yorkais et lampadaire ambré).
 * **🌴 Sunken Beach Oasis :** Pour le reggae, dub, ska et sonorités acoustiques/chill (plage de sable, palmiers stylisés et feu de camp).
 * **🎻 The Crystal Amphitheater :** Pour le classique, l'ambient, les musiques de film et le piano (colonnes de marbre et dôme céleste).
 * **🔥 The Volcanic Pit :** Pour le rock, metal, grunge et punk (rochers volcaniques et flammes ardentes).
-* **🎪 Mainstage Odyssey :** L'arche monumentale centrale avec grand écran LED pour la pop, l'indie et les genres éclectiques.
+* **✨ La Place Centrale (Sound Plaza) :** Une place ouverte avec un totem cristallin rotatif reliant les 5 scènes en étoile par des allées illuminées.
 
 Si un morceau est **en cours d'écoute en direct**, il brille d'un halo pulsant et un projecteur le suit automatiquement !
 
