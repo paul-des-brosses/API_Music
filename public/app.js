@@ -10,7 +10,6 @@ const STATE = {
   activeStageId: 'GLOBAL',
   hoveredMesh: null,
   selectedTrack: null,
-  isSimulatingError: false,
   cameraAnimation: null,
   vinylMeshes: []
 };
@@ -721,15 +720,11 @@ function setLoaderStep(percent, message) {
   if (loaderSub && message) loaderSub.textContent = message;
 }
 
-async function fetchTracks(simulateError = false) {
+async function fetchTracks() {
   try {
     setLoaderStep(65, 'Connexion au proxy Last.fm...');
 
-    const url = simulateError
-      ? '/api/recent-tracks?simulate_error=true'
-      : '/api/recent-tracks';
-
-    const res = await fetch(url);
+    const res = await fetch('/api/recent-tracks');
     const data = await res.json();
 
     if (!res.ok && !data.fromCache) {
@@ -992,22 +987,7 @@ function initEvents() {
 
   // Manual Refresh Button
   document.getElementById('btn-refresh').addEventListener('click', () => {
-    fetchTracks(false);
-  });
-
-  // Demo: Simulate Last.fm failure toggle
-  const simErrorBtn = document.getElementById('btn-simulate-error');
-  simErrorBtn.addEventListener('click', () => {
-    STATE.isSimulatingError = !STATE.isSimulatingError;
-    if (STATE.isSimulatingError) {
-      simErrorBtn.style.background = 'rgba(255, 75, 43, 0.8)';
-      simErrorBtn.querySelector('.btn-text').textContent = 'Panne Active !';
-      fetchTracks(true);
-    } else {
-      simErrorBtn.style.background = '';
-      simErrorBtn.querySelector('.btn-text').textContent = 'Test Panne';
-      fetchTracks(false);
-    }
+    fetchTracks();
   });
 
   // Escape key to close modal
@@ -1023,12 +1003,10 @@ setLoaderStep(20, 'Initialisation du moteur Three.js...');
 buildEnvironment();
 setLoaderStep(45, 'Construction des scènes et éclairages...');
 initEvents();
-fetchTracks(false);
+fetchTracks();
 animate();
 
 // Auto refresh scrobbles every 30 seconds
 setInterval(() => {
-  if (!STATE.isSimulatingError) {
-    fetchTracks(false);
-  }
+  fetchTracks();
 }, 30000);

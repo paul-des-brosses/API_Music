@@ -173,23 +173,6 @@ body, html {
   transform: rotate(45deg);
 }
 
-.btn-toggle-demo {
-  background: rgba(255, 75, 43, 0.2);
-  border: 1px solid rgba(255, 75, 43, 0.4);
-  color: #ff6b6b;
-  padding: 8px 12px;
-  border-radius: var(--radius-lg);
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-toggle-demo:hover {
-  background: rgba(255, 75, 43, 0.4);
-  color: #fff;
-}
-
 /* Alert Banner */
 .alert-banner {
   position: absolute;

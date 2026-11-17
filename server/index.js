@@ -125,25 +125,6 @@ async function fetchArtistTags(artist) {
  */
 app.get("/api/recent-tracks", async (req, res) => {
   const now = Date.now();
-  const simulateError = req.query.simulate_error === "true" || req.query.simulate_error === "1";
-
-  // Demo tool: simulate Last.fm failure if requested
-  if (simulateError) {
-    console.log("[API] Simulating Last.fm service outage as requested via ?simulate_error=true");
-    if (tracksCache.data) {
-      return res.status(200).json({
-        ...tracksCache.data,
-        fromCache: true,
-        stale: true,
-        warning: "Simulation de panne : Last.fm est inaccessible. Données de secours en cache affichées."
-      });
-    }
-    return res.status(503).json({
-      success: false,
-      error: "Service Last.fm temporairement indisponible (Simulation de panne active).",
-      fromCache: false
-    });
-  }
 
   // Check cache validity
   const cacheAge = (now - tracksCache.timestamp) / 1000;
