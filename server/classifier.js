@@ -145,60 +145,119 @@ export const KNOWN_ARTISTS = {
 };
 
 /**
- * Classifies an artist based on known artist list or Last.fm tags
+ * Classifies an artist and track based on known artist dictionary, tags, and title keywords.
+ * Computes a confidence score (0-100) and applies specific priority rules.
+ * 
+ * Rule: If a track has both RAP and REGGAE markers, RAP takes precedence.
+ * 
  * @param {string} artistName
+ * @param {string} trackName
  * @param {Array<string>} tags
- * @returns {object} Stage metadata
+ * @returns {object} { stage, confidence, matchType }
  */
-export function classifyTrack(artistName, tags = []) {
+export function classifyTrack(artistName, trackName = "", tags = []) {
   const normalizedArtist = (artistName || "").trim().toLowerCase();
+  const normalizedTitle = (trackName || "").trim().toLowerCase();
 
-  // 1. Direct dictionary match
+  // 1. Direct dictionary match (Maximum confidence: 100%)
   if (KNOWN_ARTISTS[normalizedArtist]) {
     const stageKey = KNOWN_ARTISTS[normalizedArtist];
-    return STAGES[stageKey];
+    return {
+      stage: STAGES[stageKey],
+      confidence: 100,
+      matchType: "KNOWN_ARTIST"
+    };
   }
 
-  // Partial match in known artists
+  // Partial dictionary match (Confidence: 95%)
   for (const [knownName, stageKey] of Object.entries(KNOWN_ARTISTS)) {
     if (normalizedArtist.includes(knownName) || knownName.includes(normalizedArtist)) {
-      return STAGES[stageKey];
+      return {
+        stage: STAGES[stageKey],
+        confidence: 95,
+        matchType: "KNOWN_ARTIST_PARTIAL"
+      };
     }
   }
 
-  // 2. Score by tags
+  // 2. Score by tags and title keywords
   const scores = {
     TECHNO: 0,
     RAP: 0,
     REGGAE: 0,
     CLASSICAL: 0,
-    ROCK_METAL: 0,
-    MAINSTAGE: 0
+    ROCK_METAL: 0
   };
 
-  const normalizedTags = tags.map(t => (typeof t === "string" ? t : t.name || "").toLowerCase());
+  const normalizedTags = tags.map((t) => (typeof t === "string" ? t : t.name || "").toLowerCase());
 
+  // A. Score based on tags
   for (const tag of normalizedTags) {
     for (const rule of GENRE_RULES) {
       for (const kw of rule.keywords) {
         if (tag === kw) {
-          scores[rule.stage] += 3;
+          scores[rule.stage] += 4;
         } else if (tag.includes(kw)) {
-          scores[rule.stage] += 1;
+          scores[rule.stage] += 2;
         }
       }
     }
   }
 
-  let bestStage = "REGGAE";
-  let maxScore = 0;
-
-  for (const [stage, score] of Object.entries(scores)) {
-    if (score > maxScore) {
-      maxScore = score;
-      bestStage = stage;
+  // B. Score based on track title clues
+  for (const rule of GENRE_RULES) {
+    for (const kw of rule.keywords) {
+      if (kw.length >= 4 && normalizedTitle.includes(kw)) {
+        scores[rule.stage] += 3;
+      }
     }
   }
 
-  return STAGES[bestStage];
+  // Specific title markers
+  if (normalizedTitle.includes("remix") || normalizedTitle.includes("club mix") || normalizedTitle.includes("edit")) {
+    scores.TECHNO += 3;
+  }
+  if (normalizedTitle.includes("freestyle") || normalizedTitle.includes("feat") || normalizedTitle.includes("ft.")) {
+    scores.RAP += 2;
+  }
+  if (normalizedTitle.includes("acoustic") || normalizedTitle.includes("unplugged")) {
+    scores.REGGAE += 2;
+  }
+  if (normalizedTitle.includes("symphony") || normalizedTitle.includes("concerto") || normalizedTitle.includes("orchestra")) {
+    scores.CLASSICAL += 4;
+  }
+
+  // PRIORITY RULE: "reggae > rap (si un morceau a les 2 ça va en rap)"
+  // If both RAP and REGGAE have points, RAP takes precedence
+  if (scores.RAP > 0 && scores.REGGAE > 0) {
+    scores.RAP += 5;
+  }
+
+  // Determine stage with highest score
+  let bestStage = "REGGAE";
+  let maxScore = 0;
+  let secondMaxScore = 0;
+
+  for (const [stage, score] of Object.entries(scores)) {
+    if (score > maxScore) {
+      secondMaxScore = maxScore;
+      maxScore = score;
+      bestStage = stage;
+    } else if (score > secondMaxScore) {
+      secondMaxScore = score;
+    }
+  }
+
+  // Calculate confidence score (20 to 92) based on score margin
+  let confidence = 20; // Default fallback confidence
+  if (maxScore > 0) {
+    const margin = maxScore - secondMaxScore;
+    confidence = Math.min(92, Math.max(45, 50 + margin * 8 + maxScore * 2));
+  }
+
+  return {
+    stage: STAGES[bestStage],
+    confidence,
+    matchType: maxScore > 0 ? "TAG_MATCH" : "FALLBACK"
+  };
 }

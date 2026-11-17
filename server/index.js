@@ -123,6 +123,73 @@ async function fetchArtistTags(artist) {
  * Endpoint: /api/recent-tracks
  * Fetches recent tracks from Last.fm, enriches them with genre/stage info, and caches the result.
  */
+/**
+ * Filters and selects at most `maxPerStage` (8) tracks per stage.
+ * Prioritizes tracks with the highest classification confidence.
+ * If exceeding maxPerStage on a stage, avoids repeating the same artist (diversity pass).
+ */
+function filterStageTracksWithDiversity(classifiedTracks, maxPerStage = 8) {
+  const stageGroups = {};
+
+  for (const track of classifiedTracks) {
+    const sId = track.stage?.id || "REGGAE";
+    if (!stageGroups[sId]) stageGroups[sId] = [];
+    stageGroups[sId].push(track);
+  }
+
+  const finalTracks = [];
+
+  for (const [stageId, bucket] of Object.entries(stageGroups)) {
+    if (bucket.length <= maxPerStage) {
+      finalTracks.push(...bucket);
+      continue;
+    }
+
+    // Sort by:
+    // 1. Now Playing first (always keep what's currently playing)
+    // 2. Highest confidence score DESC (priority on certain matches)
+    // 3. Recency uts DESC
+    bucket.sort((a, b) => {
+      if (b.nowPlaying !== a.nowPlaying) return b.nowPlaying ? 1 : -1;
+      if (b.confidence !== a.confidence) return b.confidence - a.confidence;
+      return b.uts - a.uts;
+    });
+
+    const selected = [];
+    const seenArtists = new Set();
+    const deferredTracks = [];
+
+    // Pass 1: Select tracks from unique artists (diversity priority)
+    for (const track of bucket) {
+      const normArtist = (track.artist || "").trim().toLowerCase();
+      if (!seenArtists.has(normArtist)) {
+        seenArtists.add(normArtist);
+        selected.push(track);
+        if (selected.length === maxPerStage) break;
+      } else {
+        deferredTracks.push(track);
+      }
+    }
+
+    // Pass 2: If we still have slots under maxPerStage, fill with highest confidence remaining tracks
+    if (selected.length < maxPerStage) {
+      for (const track of deferredTracks) {
+        selected.push(track);
+        if (selected.length === maxPerStage) break;
+      }
+    }
+
+    finalTracks.push(...selected);
+  }
+
+  return finalTracks;
+}
+
+/**
+ * Endpoint: /api/recent-tracks
+ * Fetches up to 50 recent tracks from Last.fm, enriches them with genre/stage info,
+ * selects up to 8 confident & diverse tracks per stage, and caches the result.
+ */
 app.get("/api/recent-tracks", async (req, res) => {
   const now = Date.now();
 
@@ -150,14 +217,15 @@ app.get("/api/recent-tracks", async (req, res) => {
   }
 
   try {
-    console.log(`[Last.fm] MISS -> Fetching live scrobbles for user "${LASTFM_USER}"...`);
+    console.log(`[Last.fm] MISS -> Fetching up to 50 scrobbles for user "${LASTFM_USER}"...`);
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000);
+    const timeout = setTimeout(() => controller.abort(), 6500);
 
+    // Fetch up to 50 tracks to find deep matches and diversity
     const apiUrl = `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${encodeURIComponent(
       LASTFM_USER
-    )}&api_key=${LASTFM_API_KEY}&format=json&limit=24`;
+    )}&api_key=${LASTFM_API_KEY}&format=json&limit=50`;
 
     const response = await fetch(apiUrl, { signal: controller.signal });
     clearTimeout(timeout);
@@ -188,8 +256,8 @@ app.get("/api/recent-tracks", async (req, res) => {
     const artistTagsEntries = await Promise.all(tagsPromises);
     const artistTagsMap = new Map(artistTagsEntries);
 
-    // Transform and classify tracks
-    const tracks = tracksArray.map((t, index) => {
+    // Transform and classify all 50 tracks
+    const allClassifiedTracks = tracksArray.map((t, index) => {
       const artistName = t.artist?.["#text"] || t.artist?.name || "Artiste inconnu";
       const trackName = t.name || "Titre inconnu";
       const albumName = t.album?.["#text"] || t.album?.name || "Album non spécifié";
@@ -208,7 +276,8 @@ app.get("/api/recent-tracks", async (req, res) => {
       const proxiedImageUrl = imageUrl ? `/api/image-proxy?url=${encodeURIComponent(imageUrl)}` : "";
 
       const tags = artistTagsMap.get(artistName.toLowerCase()) || [];
-      const stage = classifyTrack(artistName, tags);
+      const classification = classifyTrack(artistName, trackName, tags);
+      const stage = classification.stage;
 
       return {
         id: `track-${index}-${t.date?.uts || "now"}`,
@@ -222,6 +291,8 @@ app.get("/api/recent-tracks", async (req, res) => {
         uts: t.date?.uts ? parseInt(t.date.uts, 10) : Math.floor(Date.now() / 1000),
         url: t.url || `https://www.last.fm/music/${encodeURIComponent(artistName)}`,
         tags,
+        confidence: classification.confidence,
+        matchType: classification.matchType,
         stage: {
           id: stage.id,
           name: stage.name,
@@ -233,10 +304,16 @@ app.get("/api/recent-tracks", async (req, res) => {
       };
     });
 
+    // Select max 8 tracks per stage prioritized by confidence & diversity
+    const tracks = filterStageTracksWithDiversity(allClassifiedTracks, 8);
+
     const result = {
       success: true,
       user: LASTFM_USER,
       totalScrobbles: payload.recenttracks?.["@attr"]?.total || tracks.length,
+      scrobblesAnalyzed: allClassifiedTracks.length,
+      tracksDisplayCount: tracks.length,
+      maxPerStage: 8,
       fetchedAt: new Date().toISOString(),
       fromCache: false,
       cacheExpiresInSeconds: CACHE_TTL_SECONDS,

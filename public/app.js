@@ -872,8 +872,18 @@ function openTrackModal(track) {
     cardBadgeNow.classList.add('hidden');
   }
 
-  // Tags
+  // Tags and Confidence Badge
   cardTagsList.innerHTML = '';
+  if (track.confidence) {
+    const confSpan = document.createElement('span');
+    confSpan.className = 'tag-badge';
+    confSpan.style.borderColor = 'rgba(0, 240, 255, 0.4)';
+    confSpan.style.color = '#00f0ff';
+    confSpan.style.fontWeight = '700';
+    confSpan.textContent = `🎯 Confiance : ${track.confidence}%`;
+    cardTagsList.appendChild(confSpan);
+  }
+
   if (track.tags && track.tags.length > 0) {
     track.tags.forEach((tag) => {
       const tagSpan = document.createElement('span');
