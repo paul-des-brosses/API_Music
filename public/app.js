@@ -15,31 +15,31 @@ const STATE = {
   vinylMeshes: []
 };
 
-// Stage Coordinates & Look Targets in World Space (5 Distinct Thematic Stages)
+// Stage Coordinates & Look Targets in World Space (Equidistant Pentagonal Layout)
 const STAGE_VIEWS = {
   GLOBAL: {
-    cam: { x: 0, y: 62, z: 80 },
+    cam: { x: 0, y: 64, z: 82 },
     target: { x: 0, y: 0, z: 0 }
   },
   TECHNO: {
-    cam: { x: -24, y: 15, z: -2 },
-    target: { x: -24, y: 3.5, z: -18 }
+    cam: { x: 0, y: 15, z: -10 },
+    target: { x: 0, y: 3.5, z: -26 }
   },
   RAP: {
-    cam: { x: 24, y: 15, z: -2 },
-    target: { x: 24, y: 3.5, z: -18 }
+    cam: { x: 12, y: 15, z: 4 },
+    target: { x: 25, y: 3.5, z: -8 }
   },
   REGGAE: {
-    cam: { x: 25, y: 14, z: 35 },
-    target: { x: 25, y: 3, z: 18 }
+    cam: { x: 8, y: 14, z: 35 },
+    target: { x: 15, y: 3, z: 21 }
   },
   CLASSICAL: {
-    cam: { x: -24, y: 14, z: 35 },
-    target: { x: -24, y: 3, z: 18 }
+    cam: { x: -8, y: 14, z: 35 },
+    target: { x: -15, y: 3, z: 21 }
   },
   ROCK_METAL: {
-    cam: { x: -34, y: 14, z: 16 },
-    target: { x: -34, y: 3, z: 0 }
+    cam: { x: -12, y: 15, z: 4 },
+    target: { x: -25, y: 3.5, z: -8 }
   }
 };
 
@@ -213,13 +213,13 @@ function buildCentralPlaza() {
     ring.rotation.z = time * 0.2;
   });
 
-  // Pathway strips radiating out to the 5 stages
+  // Pathway strips radiating out to the 5 equidistant stages
   const stageTargets = [
-    { x: -24, z: -18 }, // Techno
-    { x: 24, z: -18 },  // Rap
-    { x: 25, z: 18 },   // Reggae
-    { x: -24, z: 18 },  // Classical
-    { x: -34, z: 0 }    // Metal
+    { x: 0, z: -26 },   // Techno (North)
+    { x: 25, z: -8 },   // Rap / Urban Party (East-North-East)
+    { x: 15, z: 21 },   // Reggae (South-East)
+    { x: -15, z: 21 },  // Classical (South-West)
+    { x: -25, z: -8 }   // Metal (West-North-West)
   ];
 
   for (const st of stageTargets) {
@@ -246,7 +246,7 @@ function buildCentralPlaza() {
 // 2. Techno Warehouse (Bunker néon, lasers & Mur d'enceintes Sound System)
 function buildTechnoWarehouse() {
   const group = new THREE.Group();
-  group.position.set(-25, 0, -20);
+  group.position.set(0, 0, -26);
 
   // Larger dark industrial metal bunker
   const floorGeo = new THREE.BoxGeometry(22, 0.8, 22);
@@ -362,14 +362,14 @@ function buildTechnoWarehouse() {
     }
   });
 
-  createStageSign("⚡ RAVE BUNKER", -25, 11, -20, 0x00f0ff);
+  createStageSign("⚡ RAVE BUNKER", 0, 11, -26, 0x00f0ff);
   scene.add(group);
 }
 
 // 3. Urban Party (Briques, buildings urbains & lampadaires)
 function buildRapCity() {
   const group = new THREE.Group();
-  group.position.set(25, 0, -20);
+  group.position.set(25, 0, -8);
 
   // Larger asphalt ground
   const groundGeo = new THREE.BoxGeometry(22, 0.8, 22);
@@ -399,14 +399,14 @@ function buildRapCity() {
   pole.position.set(0, 3.75, 2);
   group.add(pole);
 
-  createStageSign("🎤 URBAN PARTY", 25, 10.5, -20, 0xffaa00);
+  createStageSign("🎤 URBAN PARTY", 25, 10.5, -8, 0xffaa00);
   scene.add(group);
 }
 
 // 4. Reggae Oasis (Sable agrandi, palmiers, chill)
 function buildReggaeOasis() {
   const group = new THREE.Group();
-  group.position.set(26, 0, 20);
+  group.position.set(15, 0, 21);
 
   // Larger sand dune floor
   const sandGeo = new THREE.CylinderGeometry(11.5, 13, 1, 32);
@@ -444,14 +444,14 @@ function buildReggaeOasis() {
     fireLight.intensity = 3.5 + Math.sin(time * 8) * 0.9;
   });
 
-  createStageSign("🌴 SUNKEN OASIS", 26, 8.5, 20, 0x2ecc71);
+  createStageSign("🌴 SUNKEN OASIS", 15, 8.5, 21, 0x2ecc71);
   scene.add(group);
 }
 
 // 5. Classical Amphitheater (Colonnes de marbre agrandies, dôme & lueur mystique)
 function buildClassicalAmphitheater() {
   const group = new THREE.Group();
-  group.position.set(-25, 0, 20);
+  group.position.set(-15, 0, 21);
 
   // Larger Marble circular base
   const baseGeo = new THREE.CylinderGeometry(11, 12, 1, 32);
@@ -480,14 +480,14 @@ function buildClassicalAmphitheater() {
   domeLight.position.set(0, 5, -2);
   group.add(domeLight);
 
-  createStageSign("🎻 CRYSTAL DOME", -25, 8.8, 20, 0x9b59b6);
+  createStageSign("🎻 CRYSTAL DOME", -15, 8.8, 21, 0x9b59b6);
   scene.add(group);
 }
 
 // 6. Metal & Rock Volcanic Pit
 function buildMetalPit() {
   const group = new THREE.Group();
-  group.position.set(-35, 0, 0);
+  group.position.set(-25, 0, -8);
 
   // Dark volcanic stone (Larger)
   const stoneGeo = new THREE.CylinderGeometry(9.5, 10.5, 1, 20);
@@ -505,7 +505,7 @@ function buildMetalPit() {
     flameLight.intensity = 4 + Math.sin(time * 10) * 1.3;
   });
 
-  createStageSign("🔥 VOLCANIC PIT", -35, 8, 0, 0xe74c3c);
+  createStageSign("🔥 VOLCANIC PIT", -25, 8, -8, 0xe74c3c);
   scene.add(group);
 }
 
