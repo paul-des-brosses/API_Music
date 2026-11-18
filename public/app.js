@@ -6,12 +6,14 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
    ========================================================================== */
 const STATE = {
   tracks: [],
+  tracksSignature: '',
   stages: {},
   activeStageId: 'GLOBAL',
   hoveredMesh: null,
   selectedTrack: null,
   cameraAnimation: null,
-  vinylMeshes: []
+  vinylMeshes: [],
+  intersectableDiscs: []
 };
 
 // Stage Coordinates & Look Targets in World Space (Equidistant Pentagonal Layout)
@@ -76,9 +78,7 @@ camera.position.set(STAGE_VIEWS.GLOBAL.cam.x, STAGE_VIEWS.GLOBAL.cam.y, STAGE_VI
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 container.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -109,9 +109,6 @@ function buildEnvironment() {
 
   const moonLight = new THREE.DirectionalLight(0xffcf94, 2.4);
   moonLight.position.set(40, 85, 40);
-  moonLight.castShadow = true;
-  moonLight.shadow.mapSize.width = 1024;
-  moonLight.shadow.mapSize.height = 1024;
   scene.add(moonLight);
 
   // 3. Water Ocean Plane (Warm deep midnight reflection)
@@ -135,7 +132,6 @@ function buildEnvironment() {
   });
   const island = new THREE.Mesh(islandGeo, islandMat);
   island.position.y = -0.8;
-  island.receiveShadow = true;
   scene.add(island);
 
 
@@ -166,7 +162,6 @@ function buildCentralPlaza() {
   });
   const plaza = new THREE.Mesh(plazaGeo, plazaMat);
   plaza.position.y = 0.2;
-  plaza.receiveShadow = true;
   group.add(plaza);
 
   // Outer warm golden glowing boundary ring
@@ -336,6 +331,10 @@ function buildCentralPlaza() {
 
   const lanternGeo = new THREE.SphereGeometry(0.2, 12, 12);
   const lanternMat = new THREE.MeshBasicMaterial({ color: 0xffb74d });
+  const pathMat = new THREE.MeshStandardMaterial({
+    color: 0x2d221e,
+    roughness: 0.85
+  });
 
   for (const st of stageTargets) {
     const dx = st.x;
@@ -344,10 +343,6 @@ function buildCentralPlaza() {
     const angle = Math.atan2(dz, dx);
 
     const pathGeo = new THREE.PlaneGeometry(dist - 8, 1.4);
-    const pathMat = new THREE.MeshStandardMaterial({
-      color: 0x2d221e,
-      roughness: 0.85
-    });
     const path = new THREE.Mesh(pathGeo, pathMat);
     path.rotation.x = -Math.PI / 2;
     path.rotation.z = -angle;
@@ -434,12 +429,15 @@ function buildTechnoWarehouse() {
 
   const speakerCones = [];
 
-  // 6 columns x 3 rows of subwoofers
+  // 6 columns x 3 rows of subwoofers (shared geometries)
   const cols = 6;
   const rows = 3;
   const cabWidth = 2.8;
   const cabHeight = 2.4;
   const startX = -((cols - 1) * cabWidth) / 2;
+  const cabGeo = new THREE.BoxGeometry(cabWidth - 0.2, cabHeight - 0.2, 1.8);
+  const coneGeo = new THREE.CylinderGeometry(0.85, 0.5, 0.2, 24);
+  const capGeo = new THREE.SphereGeometry(0.3, 16, 16);
 
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
@@ -447,13 +445,11 @@ function buildTechnoWarehouse() {
       const cabY = 1.3 + r * cabHeight;
 
       // Wooden speaker cabinet
-      const cabGeo = new THREE.BoxGeometry(cabWidth - 0.2, cabHeight - 0.2, 1.8);
       const cab = new THREE.Mesh(cabGeo, speakerCabMat);
       cab.position.set(cabX, cabY, 0);
       speakerWallGroup.add(cab);
 
       // Woofer driver cone
-      const coneGeo = new THREE.CylinderGeometry(0.85, 0.5, 0.2, 24);
       const cone = new THREE.Mesh(coneGeo, wooferConeMat);
       cone.rotation.x = Math.PI / 2;
       cone.position.set(cabX, cabY, 0.85);
@@ -461,7 +457,6 @@ function buildTechnoWarehouse() {
       speakerCones.push(cone);
 
       // Center silver dust cap
-      const capGeo = new THREE.SphereGeometry(0.3, 16, 16);
       const cap = new THREE.Mesh(capGeo, dustCapMat);
       cap.position.set(cabX, cabY, 0.95);
       speakerWallGroup.add(cap);
@@ -602,11 +597,12 @@ function buildReggaeOasis() {
   createPalm(5.5, 3, 6.5);
   createPalm(0, -6, 6);
 
-  // Fire pit stone circle
+  // Fire pit stone circle (shared geometry)
   const stoneMat = new THREE.MeshStandardMaterial({ color: 0x2b231d, roughness: 0.9 });
+  const fireStoneGeo = new THREE.DodecahedronGeometry(0.35);
   for (let a = 0; a < 8; a++) {
     const angle = (a / 8) * Math.PI * 2;
-    const stone = new THREE.Mesh(new THREE.DodecahedronGeometry(0.35), stoneMat);
+    const stone = new THREE.Mesh(fireStoneGeo, stoneMat);
     stone.position.set(Math.cos(angle) * 1.2, 1.05, Math.sin(angle) * 1.2);
     group.add(stone);
   }
@@ -644,23 +640,23 @@ function buildClassicalAmphitheater() {
   base.position.y = 0.5;
   group.add(base);
 
-  // Semicircle Alabaster & Candlelit Marble Columns
+  // Semicircle Alabaster & Candlelit Marble Columns (shared geometries & materials)
   const radius = 8.5;
   const colCount = 10;
+  const colGeo = new THREE.CylinderGeometry(0.35, 0.4, 7, 12);
+  const colMat = new THREE.MeshStandardMaterial({ color: 0xb5a396, roughness: 0.3 });
+  const candleGeo = new THREE.SphereGeometry(0.14, 8, 8);
+  const candleMat = new THREE.MeshBasicMaterial({ color: 0xffd27d });
   for (let i = 0; i < colCount; i++) {
     const angle = (Math.PI / (colCount - 1)) * i;
     const x = Math.cos(angle) * radius;
     const z = -Math.sin(angle) * radius;
 
-    const colGeo = new THREE.CylinderGeometry(0.35, 0.4, 7, 12);
-    const colMat = new THREE.MeshStandardMaterial({ color: 0xb5a396, roughness: 0.3 });
     const col = new THREE.Mesh(colGeo, colMat);
     col.position.set(x, 4, z);
     group.add(col);
 
     // Candle beacon atop each column
-    const candleGeo = new THREE.SphereGeometry(0.14, 8, 8);
-    const candleMat = new THREE.MeshBasicMaterial({ color: 0xffd27d });
     const candle = new THREE.Mesh(candleGeo, candleMat);
     candle.position.set(x, 7.6, z);
     group.add(candle);
@@ -746,12 +742,34 @@ function createStageSign(text, x, y, z, colorHex) {
 /* ==========================================================================
    VINYL RECORDS GENERATION (Tracks as 3D Holographic Discs)
    ========================================================================== */
+const SHARED_VINYL = {
+  discGeo: new THREE.CylinderGeometry(1.6, 1.6, 0.06, 32),
+  discMat: new THREE.MeshStandardMaterial({ color: 0x0f1115, roughness: 0.35, metalness: 0.8 }),
+  masterDiscMat: new THREE.MeshStandardMaterial({ color: 0x1a150e, roughness: 0.25, metalness: 0.88 }),
+  labelGeo: new THREE.CircleGeometry(0.75, 32),
+  masterLabelGeo: new THREE.CircleGeometry(0.92, 32),
+  goldRingGeo: new THREE.RingGeometry(1.65, 1.88, 40),
+  goldRingMat: new THREE.MeshBasicMaterial({ color: 0xffd700, side: THREE.DoubleSide, transparent: true, opacity: 0.92 }),
+  nowPlayingRingGeo: new THREE.RingGeometry(1.65, 1.85, 32),
+  nowPlayingRingMat: new THREE.MeshBasicMaterial({ color: 0xff0055, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
+};
+const SHARED_SET = new Set(Object.values(SHARED_VINYL));
+
 function clearVinyls() {
   for (const v of STATE.vinylMeshes) {
     scene.remove(v);
-    if (v.geometry) v.geometry.dispose();
+    v.traverse((child) => {
+      if (!child.isMesh) return;
+      if (child.geometry && !SHARED_SET.has(child.geometry)) child.geometry.dispose();
+      if (child.material && !SHARED_SET.has(child.material)) {
+        if (child.material.map) child.material.map.dispose();
+        child.material.dispose();
+      }
+    });
   }
   STATE.vinylMeshes = [];
+  STATE.intersectableDiscs = [];
+  STATE.hoveredMesh = null;
 }
 
 function createFallbackLabelMaterial(track) {
@@ -847,19 +865,17 @@ function createVinylMesh(track, index, stageTracksCount) {
   const vinylGroup = new THREE.Group();
   vinylGroup.position.set(posX, posY, posZ);
 
-  // 1. Vinyl Body (Black grooved disc; gold-accented sheen for Masterclass)
-  const discGeo = new THREE.CylinderGeometry(1.6, 1.6, 0.06, 32);
-  const discMat = new THREE.MeshStandardMaterial({
-    color: isMasterclass ? 0x1a150e : 0x0f1115,
-    roughness: isMasterclass ? 0.25 : 0.35,
-    metalness: isMasterclass ? 0.88 : 0.8
-  });
-  const disc = new THREE.Mesh(discGeo, discMat);
-  disc.castShadow = true;
+  // 1. Vinyl Body (shared geometry & material)
+  const disc = new THREE.Mesh(
+    SHARED_VINYL.discGeo,
+    isMasterclass ? SHARED_VINYL.masterDiscMat : SHARED_VINYL.discMat
+  );
+  disc.userData.parentGroup = vinylGroup;
   vinylGroup.add(disc);
+  STATE.intersectableDiscs.push(disc);
 
   // 2. Vinyl Center Label (Album Artwork)
-  const labelGeo = new THREE.CircleGeometry(isMasterclass ? 0.92 : 0.75, 32);
+  const labelGeo = isMasterclass ? SHARED_VINYL.masterLabelGeo : SHARED_VINYL.labelGeo;
   let labelMat;
 
   if (track.image) {
@@ -892,32 +908,14 @@ function createVinylMesh(track, index, stageTracksCount) {
   let baseScale = 1.0;
 
   if (isMasterclass) {
-    const goldRingGeo = new THREE.RingGeometry(1.65, 1.88, 40);
-    const goldRingMat = new THREE.MeshBasicMaterial({
-      color: 0xffd700,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.92
-    });
-    const goldRing = new THREE.Mesh(goldRingGeo, goldRingMat);
+    const goldRing = new THREE.Mesh(SHARED_VINYL.goldRingGeo, SHARED_VINYL.goldRingMat);
     goldRing.rotation.x = -Math.PI / 2;
     vinylGroup.add(goldRing);
-
-    const masterLight = new THREE.PointLight(0xffd700, 2.8, 14);
-    masterLight.position.set(0, 3.2, 0);
-    vinylGroup.add(masterLight);
 
     baseScale = 1.38;
     vinylGroup.scale.set(baseScale, baseScale, baseScale);
   } else if (track.nowPlaying) {
-    const ringGeo = new THREE.RingGeometry(1.65, 1.85, 32);
-    const ringMat = new THREE.MeshBasicMaterial({
-      color: 0xff0055,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.9
-    });
-    const ring = new THREE.Mesh(ringGeo, ringMat);
+    const ring = new THREE.Mesh(SHARED_VINYL.nowPlayingRingGeo, SHARED_VINYL.nowPlayingRingMat);
     ring.rotation.x = -Math.PI / 2;
     vinylGroup.add(ring);
 
@@ -948,6 +946,11 @@ function createVinylMesh(track, index, stageTracksCount) {
 }
 
 function renderTracksTo3D(tracks) {
+  const sig = tracks.map((t) => `${t.id}:${t.nowPlaying ? 1 : 0}:${t.stage?.id || ''}`).join('|');
+  if (sig === STATE.tracksSignature && STATE.vinylMeshes.length > 0) {
+    return;
+  }
+  STATE.tracksSignature = sig;
   clearVinyls();
 
   // Group tracks by stage to layout nicely across the 5 thematic stages
@@ -1057,29 +1060,24 @@ function hideAlert() {
 /* ==========================================================================
    INTERACTIONS & RAYCASTING
    ========================================================================== */
+let pointerDirty = false;
+
 function onPointerMove(event) {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  pointerDirty = true;
+}
+
+function updateHoverRaycast() {
+  if (!pointerDirty) return;
+  pointerDirty = false;
 
   raycaster.setFromCamera(mouse, camera);
-
-  // Check collision with any vinyl group children
-  const intersectables = [];
-  for (const vg of STATE.vinylMeshes) {
-    vg.traverse((child) => {
-      if (child.isMesh) {
-        child.userData.parentGroup = vg;
-        intersectables.push(child);
-      }
-    });
-  }
-
-  const intersects = raycaster.intersectObjects(intersectables, false);
+  const intersects = raycaster.intersectObjects(STATE.intersectableDiscs, false);
 
   if (intersects.length > 0) {
     const parent = intersects[0].object.userData.parentGroup;
     if (parent && STATE.hoveredMesh !== parent) {
-      // Unhover previous
       if (STATE.hoveredMesh) {
         const s = STATE.hoveredMesh.userData.baseScale;
         STATE.hoveredMesh.scale.set(s, s, s);
@@ -1269,8 +1267,12 @@ const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
 
+  if (document.hidden) return;
+
   const delta = clock.getDelta();
   const time = clock.getElapsedTime();
+
+  updateHoverRaycast();
 
   // Run stage environment animations (lasers, strobe, spotlights)
   for (const fn of animatedElements) {
@@ -1320,7 +1322,12 @@ function initEvents() {
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) clock.getDelta();
   });
 
   window.addEventListener('pointermove', onPointerMove);
