@@ -18,5 +18,3 @@ Thumbs.db
 .idea/
 *.log
 
-# Local demo video (hosted in GitHub Release v1.0)
-demo_video.mp4

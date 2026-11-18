@@ -4,9 +4,9 @@
 
 ## 🎬 Démo vidéo
 
-<video src="https://github.com/paul-des-brosses/API_Music/releases/download/v1.0/demo_video.mp4" controls width="100%"></video>
+<video src="https://github.com/paul-des-brosses/API_Music/raw/main/Video_demo.mp4" controls width="100%"></video>
 
-> 👉 [Voir / télécharger la vidéo de démo (`demo_video.mp4`)](https://github.com/paul-des-brosses/API_Music/releases/download/v1.0/demo_video.mp4)
+> 👉 [Voir / télécharger la vidéo de démo (`Video_demo.mp4`)](./Video_demo.mp4)
 
 ---
 
@@ -24,6 +24,16 @@ Chaque morceau écouté récemment est automatiquement analysé, catégorisé se
 * **🏆 La Place Centrale (Masterclass) :** Une place centrale dorée avec une coupe en or, le vinyle *Outsider* de Kavinsky et l'inscription courbée **MASTERCLASS**, reliant les 5 scènes par des allées illuminées.
 
 Si un morceau est **en cours d'écoute en direct**, il brille d'un halo pulsant et un projecteur le suit automatiquement !
+
+---
+
+## 🎯 Classification des morceaux par scène
+
+Le serveur récupère les **50 derniers scrobbles** sur Last.fm ainsi que les tags de chaque artiste (`artist.getTopTags`, mis en cache), puis classe chaque titre en 3 étapes :
+
+1. **Dictionnaire prioritaire (`100 %` de confiance) :** certains artistes de référence sont directement associés à leur scène (plus le titre *Masterclass* affiché au centre).
+2. **Scoring par tags & mots-clés :** les tags Last.fm de l'artiste et les indices du titre (ex. *remix*, *symphony*) donnent des points à chaque genre ; en cas de double marqueur Rap / Reggae, le Rap l'emporte.
+3. **Sélection & diversité :** jusqu'à **8 vinyles par scène**, triés par lecture en direct, score de confiance et récence, en évitant de répéter deux fois le même artiste tant que possible.
 
 ---
 
