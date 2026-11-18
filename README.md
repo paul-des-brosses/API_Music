@@ -6,10 +6,6 @@
 
 https://github.com/user-attachments/assets/2ea99f77-5b56-4b4d-9490-cf00170a222a
 
-<video src="https://github.com/paul-des-brosses/API_Music/raw/main/Video_demo.mp4" controls width="100%"></video>
-
-> 👉 [Voir / télécharger la vidéo de démo (`Video_demo.mp4`)](./Video_demo.mp4)
-
 ---
 
 ## 🌟 Le Concept : L'Archipel Musical / Festival des Genres
