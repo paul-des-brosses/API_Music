@@ -40,7 +40,7 @@ Si un morceau est **en cours d'écoute en direct**, il brille d'un halo pulsant 
 
 1. Clonez le dépôt :
    ```bash
-   git clone https://github.com/<votre-compte>/API_Music.git
+   git clone https://github.com/paul-des-brosses/API_Music.git
    cd API_Music
    ```
 
@@ -117,7 +117,7 @@ flowchart LR
 ### 2. Démonstration Technique (1 minute)
 * **Preuve du Cache :** Montrer l'inspecteur réseau (F12) $\rightarrow$ Recharger la page : l'indicateur affiche `En cache (45s)` et aucune requête ne part vers Last.fm.
 * **Preuve de la Sécurité :** Montrer que l'onglet Réseau ne contient aucune requête sortante vers le domaine Last.fm, et que la clé API n'apparaît nulle part dans le code source du navigateur.
-* **Preuve de Résilience (Bouton 'Test Panne') :** Cliquer sur le bouton "Test Panne" dans l'en-tête. L'application intercepte la simulation d'erreur et affiche un message clair tout en conservant l'expérience 3D intacte sans aucun écran blanc.
+* **Preuve de Résilience :** En cas d'indisponibilité de Last.fm, le serveur renvoie automatiquement les dernières données valides en cache et l'interface affiche un bandeau d'alerte contextuel sans aucun écran blanc.
 
 ### 3. Deux Questions Fréquentes du Jury & Réponses Prêtes
 
@@ -126,6 +126,12 @@ flowchart LR
 
 * **Q2 : Pourquoi les images d'albums passent-elles aussi par ton serveur ?**
   > *"La consigne stipule : 'In the browser's Network tab, no request goes to Last.fm'. Si le front chargeait les images directement depuis le CDN de Last.fm, l'inspecteur réseau afficherait des requêtes vers Last.fm. J'ai donc créé un endpoint `/api/image-proxy` avec cache mémoire pour que 100% du trafic web reste strictement entre le navigateur et mon propre serveur."*
+
+---
+
+## ⚠️ Limites connues
+
+* **Scrobbling limité au navigateur :** Le suivi des écoutes Last.fm s'effectue uniquement depuis la version navigateur. Comme j'écoute principalement de la musique sur mon téléphone, les écoutes mobiles ne remontent pas et l'application ne se met donc pas réellement à jour sur ce que j'écoute au quotidien aujourd'hui.
 
 ---
 
