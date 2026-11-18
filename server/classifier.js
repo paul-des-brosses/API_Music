@@ -3,6 +3,17 @@
  * Maps Last.fm tags to one of the 5 Festival Zones.
  */
 
+export const MASTERCLASS_STAGE = {
+  id: "MASTERCLASS",
+  name: "🏆 Masterclass — Place Centrale",
+  subtitle: "Trophée d'Honneur",
+  position: { x: 0, y: 0, z: 0 },
+  color: "#ffd700",
+  secondaryColor: "#ff9900",
+  ambientLight: 0xffd700,
+  description: "Le cœur du festival : récompense ultime attribuée à une véritable masterclass."
+};
+
 export const STAGES = {
   TECHNO: {
     id: "TECHNO",
@@ -185,6 +196,15 @@ export const KNOWN_ARTISTS = {
 export function classifyTrack(artistName, trackName = "", tags = []) {
   const normalizedArtist = (artistName || "").trim().toLowerCase();
   const normalizedTitle = (trackName || "").trim().toLowerCase();
+
+  // 0. Masterclass centerpiece track (Place Centrale)
+  if (normalizedArtist.includes("kavinsky") && normalizedTitle.includes("outsider")) {
+    return {
+      stage: MASTERCLASS_STAGE,
+      confidence: 100,
+      matchType: "MASTERCLASS"
+    };
+  }
 
   // 1. Direct dictionary match (Maximum confidence: 100%)
   if (KNOWN_ARTISTS[normalizedArtist]) {

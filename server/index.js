@@ -140,7 +140,8 @@ function filterStageTracksWithDiversity(classifiedTracks, maxPerStage = 8) {
   const finalTracks = [];
 
   for (const [stageId, bucket] of Object.entries(stageGroups)) {
-    if (bucket.length <= maxPerStage) {
+    const stageLimit = stageId === "MASTERCLASS" ? 1 : maxPerStage;
+    if (bucket.length <= stageLimit) {
       finalTracks.push(...bucket);
       continue;
     }
@@ -165,17 +166,17 @@ function filterStageTracksWithDiversity(classifiedTracks, maxPerStage = 8) {
       if (!seenArtists.has(normArtist)) {
         seenArtists.add(normArtist);
         selected.push(track);
-        if (selected.length === maxPerStage) break;
+        if (selected.length === stageLimit) break;
       } else {
         deferredTracks.push(track);
       }
     }
 
-    // Pass 2: If we still have slots under maxPerStage, fill with highest confidence remaining tracks
-    if (selected.length < maxPerStage) {
+    // Pass 2: If we still have slots under stageLimit, fill with highest confidence remaining tracks
+    if (selected.length < stageLimit) {
       for (const track of deferredTracks) {
         selected.push(track);
-        if (selected.length === maxPerStage) break;
+        if (selected.length === stageLimit) break;
       }
     }
 

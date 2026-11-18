@@ -181,6 +181,144 @@ function buildCentralPlaza() {
   plazaLight.position.set(0, 1.8, 0);
   group.add(plazaLight);
 
+  // --- 1. PETITE COUPE DORÉE EN HAUT DU CERCLE (Nord / -Z) ---
+  const trophyGroup = new THREE.Group();
+  trophyGroup.position.set(0, 0.4, -4.6);
+
+  const goldMat = new THREE.MeshStandardMaterial({
+    color: 0xffd700,
+    emissive: 0x4a2e00,
+    emissiveIntensity: 0.45,
+    metalness: 0.92,
+    roughness: 0.16
+  });
+  const plinthMat = new THREE.MeshStandardMaterial({
+    color: 0x1b1512,
+    roughness: 0.35,
+    metalness: 0.25
+  });
+
+  // Dark marble base plinth + thin gold trim
+  const plinth = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 1.02, 0.42, 24), plinthMat);
+  plinth.position.y = 0.21;
+  trophyGroup.add(plinth);
+
+  const plinthTrim = new THREE.Mesh(new THREE.CylinderGeometry(0.88, 0.88, 0.06, 24), goldMat);
+  plinthTrim.position.y = 0.43;
+  trophyGroup.add(plinthTrim);
+
+  // Golden foot & slim stem
+  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.64, 0.24, 20), goldMat);
+  foot.position.y = 0.56;
+  trophyGroup.add(foot);
+
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 0.72, 16), goldMat);
+  stem.position.y = 1.02;
+  trophyGroup.add(stem);
+
+  // Classic trophy goblet chalice via LatheGeometry
+  const cupPoints = [
+    new THREE.Vector2(0.0, 0.0),
+    new THREE.Vector2(0.24, 0.04),
+    new THREE.Vector2(0.46, 0.28),
+    new THREE.Vector2(0.76, 0.82),
+    new THREE.Vector2(0.95, 1.38),
+    new THREE.Vector2(1.02, 1.54),
+    new THREE.Vector2(0.88, 1.54),
+    new THREE.Vector2(0.76, 1.2),
+    new THREE.Vector2(0.42, 0.4),
+    new THREE.Vector2(0.0, 0.22)
+  ];
+  const chaliceGeo = new THREE.LatheGeometry(cupPoints, 28);
+  const chalice = new THREE.Mesh(chaliceGeo, goldMat);
+  chalice.position.y = 1.34;
+  trophyGroup.add(chalice);
+
+  // Left & Right golden trophy handles
+  const handleGeo = new THREE.TorusGeometry(0.42, 0.075, 12, 24, Math.PI * 1.15);
+  const leftHandle = new THREE.Mesh(handleGeo, goldMat);
+  leftHandle.position.set(-0.84, 2.24, 0);
+  leftHandle.rotation.z = Math.PI * 0.45;
+  trophyGroup.add(leftHandle);
+
+  const rightHandle = new THREE.Mesh(handleGeo, goldMat);
+  rightHandle.position.set(0.84, 2.24, 0);
+  rightHandle.rotation.z = -Math.PI * 0.58;
+  trophyGroup.add(rightHandle);
+
+  // Warm gleam light dedicated to the trophy cup
+  const trophyLight = new THREE.PointLight(0xffd700, 2.6, 12);
+  trophyLight.position.set(0, 3.3, 0.8);
+  trophyGroup.add(trophyLight);
+
+  animatedElements.push((time) => {
+    trophyGroup.rotation.y = Math.sin(time * 0.9) * 0.25;
+  });
+
+  group.add(trophyGroup);
+
+  // --- 2. TEXTE DORÉ COURBÉ "MASTERCLASS" SUIVANT LE BAS DU CERCLE (Sud / +Z) ---
+  const textCanvas = document.createElement('canvas');
+  textCanvas.width = 1024;
+  textCanvas.height = 1024;
+  const tCtx = textCanvas.getContext('2d');
+  const cx = 512;
+  const cy = 512;
+  const textRadius = 402;
+  const label = 'MASTERCLASS';
+
+  tCtx.save();
+  tCtx.font = '800 84px "Space Grotesk", "Plus Jakarta Sans", sans-serif';
+  tCtx.textAlign = 'center';
+  tCtx.textBaseline = 'middle';
+
+  // Spread characters smoothly along the bottom circular arc (left -> bottom -> right)
+  const totalArc = Math.PI * 0.62;
+  const startAngle = Math.PI / 2 + totalArc / 2;
+  const angleStep = totalArc / (label.length - 1);
+
+  for (let i = 0; i < label.length; i++) {
+    const angle = startAngle - i * angleStep;
+    const x = cx + Math.cos(angle) * textRadius;
+    const y = cy + Math.sin(angle) * textRadius;
+
+    tCtx.save();
+    tCtx.translate(x, y);
+    tCtx.rotate(angle - Math.PI / 2);
+
+    // Metallic gold gradient per letter
+    const grad = tCtx.createLinearGradient(0, -42, 0, 42);
+    grad.addColorStop(0, '#fff7cc');
+    grad.addColorStop(0.45, '#ffd700');
+    grad.addColorStop(1, '#c78200');
+
+    // Warm golden glow + dark bronze crisp contour
+    tCtx.shadowColor = 'rgba(255, 195, 30, 0.9)';
+    tCtx.shadowBlur = 22;
+    tCtx.lineWidth = 6;
+    tCtx.strokeStyle = '#3d2200';
+    tCtx.strokeText(label[i], 0, 0);
+
+    tCtx.fillStyle = grad;
+    tCtx.fillText(label[i], 0, 0);
+    tCtx.restore();
+  }
+  tCtx.restore();
+
+  const textTex = new THREE.CanvasTexture(textCanvas);
+  textTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const textPlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(17.0, 17.0),
+    new THREE.MeshBasicMaterial({
+      map: textTex,
+      transparent: true,
+      depthWrite: false
+    })
+  );
+  textPlane.rotation.x = -Math.PI / 2;
+  textPlane.position.y = 0.43;
+  group.add(textPlane);
+
   // Pathway strips radiating out to the 5 equidistant stages with warm lantern beacons
   const stageTargets = [
     { x: 0, z: -26 },   // Techno (North)
@@ -615,39 +753,72 @@ function createFallbackLabelMaterial(track) {
   canvas.width = 512;
   canvas.height = 512;
   const ctx = canvas.getContext('2d');
+  const isMasterclass = track.stage?.id === 'MASTERCLASS';
 
-  // Gradient background using stage colors
-  const grad = ctx.createLinearGradient(0, 0, 512, 512);
-  grad.addColorStop(0, track.stage?.color || '#00f0ff');
-  grad.addColorStop(1, track.stage?.secondaryColor || '#ff007f');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 512, 512);
+  if (isMasterclass) {
+    // Luxury gold & obsidian radial label for the Masterclass centerpiece
+    const grad = ctx.createRadialGradient(256, 256, 30, 256, 256, 256);
+    grad.addColorStop(0, '#fff3b0');
+    grad.addColorStop(0.55, '#f5b800');
+    grad.addColorStop(1, '#7a4900');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 512, 512);
 
-  // Concentric vinyl ring lines on label
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.arc(256, 256, 220, 0, Math.PI * 2);
-  ctx.stroke();
+    ctx.strokeStyle = 'rgba(20, 12, 0, 0.45)';
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.arc(256, 256, 224, 0, Math.PI * 2);
+    ctx.stroke();
 
-  // Spindle center hole
-  ctx.fillStyle = '#060810';
-  ctx.beginPath();
-  ctx.arc(256, 256, 36, 0, Math.PI * 2);
-  ctx.fill();
+    // Spindle center hole
+    ctx.fillStyle = '#120d08';
+    ctx.beginPath();
+    ctx.arc(256, 256, 34, 0, Math.PI * 2);
+    ctx.fill();
 
-  // Typography
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 36px Space Grotesk, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  const cleanArtist = (track.artist || 'Artiste').slice(0, 18);
-  ctx.fillText(cleanArtist, 256, 170);
+    // Bold dark typography for crisp contrast on gold
+    ctx.fillStyle = '#1b1100';
+    ctx.font = '800 50px Space Grotesk, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText((track.artist || 'KAVINSKY').toUpperCase().slice(0, 16), 256, 155);
 
-  ctx.font = '600 24px Plus Jakarta Sans, sans-serif';
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-  const cleanTrack = (track.name || 'Titre').slice(0, 24);
-  ctx.fillText(cleanTrack, 256, 340);
+    ctx.font = '700 42px Plus Jakarta Sans, sans-serif';
+    ctx.fillText((track.name || 'OUTSIDER').toUpperCase().slice(0, 20), 256, 355);
+  } else {
+    // Gradient background using stage colors
+    const grad = ctx.createLinearGradient(0, 0, 512, 512);
+    grad.addColorStop(0, track.stage?.color || '#00f0ff');
+    grad.addColorStop(1, track.stage?.secondaryColor || '#ff007f');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 512, 512);
+
+    // Concentric vinyl ring lines on label
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(256, 256, 220, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Spindle center hole
+    ctx.fillStyle = '#060810';
+    ctx.beginPath();
+    ctx.arc(256, 256, 36, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Typography
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 36px Space Grotesk, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const cleanArtist = (track.artist || 'Artiste').slice(0, 18);
+    ctx.fillText(cleanArtist, 256, 170);
+
+    ctx.font = '600 24px Plus Jakarta Sans, sans-serif';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    const cleanTrack = (track.name || 'Titre').slice(0, 24);
+    ctx.fillText(cleanTrack, 256, 340);
+  }
 
   const tex = new THREE.CanvasTexture(canvas);
   return new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide });
@@ -657,31 +828,32 @@ function createFallbackLabelMaterial(track) {
  * Creates a circular vinyl record with album art in the center
  */
 function createVinylMesh(track, index, stageTracksCount) {
+  const isMasterclass = track.stage?.id === 'MASTERCLASS';
   const stagePos = track.stage?.position || { x: 0, y: 0, z: 0 };
 
-  // Calculate distributed slot on the stage (adapted to larger stage sizes)
-  const angle = (index / Math.max(1, stageTracksCount)) * Math.PI * 2;
-  const radius = stageTracksCount > 1 ? 4.8 : 0;
-  const posX = stagePos.x + Math.cos(angle) * radius;
-  const posZ = stagePos.z + Math.sin(angle) * radius;
-  const posY = 2.5 + (index % 3) * 0.4;
+  // Calculate distributed slot on the stage (Masterclass stays centered under the trophy cup)
+  const angle = isMasterclass ? 0 : (index / Math.max(1, stageTracksCount)) * Math.PI * 2;
+  const radius = isMasterclass ? 0 : (stageTracksCount > 1 ? 4.8 : 0);
+  const posX = isMasterclass ? 0 : stagePos.x + Math.cos(angle) * radius;
+  const posZ = isMasterclass ? 0.7 : stagePos.z + Math.sin(angle) * radius;
+  const posY = isMasterclass ? 1.9 : 2.5 + (index % 3) * 0.4;
 
   const vinylGroup = new THREE.Group();
   vinylGroup.position.set(posX, posY, posZ);
 
-  // 1. Vinyl Body (Black grooved disc)
+  // 1. Vinyl Body (Black grooved disc; gold-accented sheen for Masterclass)
   const discGeo = new THREE.CylinderGeometry(1.6, 1.6, 0.06, 32);
   const discMat = new THREE.MeshStandardMaterial({
-    color: 0x0f1115,
-    roughness: 0.35,
-    metalness: 0.8
+    color: isMasterclass ? 0x1a150e : 0x0f1115,
+    roughness: isMasterclass ? 0.25 : 0.35,
+    metalness: isMasterclass ? 0.88 : 0.8
   });
   const disc = new THREE.Mesh(discGeo, discMat);
   disc.castShadow = true;
   vinylGroup.add(disc);
 
   // 2. Vinyl Center Label (Album Artwork)
-  const labelGeo = new THREE.CircleGeometry(0.75, 32);
+  const labelGeo = new THREE.CircleGeometry(isMasterclass ? 0.92 : 0.75, 32);
   let labelMat;
 
   if (track.image) {
@@ -710,8 +882,28 @@ function createVinylMesh(track, index, stageTracksCount) {
   labelBottom.position.y = -0.035;
   vinylGroup.add(labelBottom);
 
-  // 3. Now Playing Aura & Glowing Ring
-  if (track.nowPlaying) {
+  // 3. Masterclass Golden Ring & Spotlight OR Now Playing Aura
+  let baseScale = 1.0;
+
+  if (isMasterclass) {
+    const goldRingGeo = new THREE.RingGeometry(1.65, 1.88, 40);
+    const goldRingMat = new THREE.MeshBasicMaterial({
+      color: 0xffd700,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.92
+    });
+    const goldRing = new THREE.Mesh(goldRingGeo, goldRingMat);
+    goldRing.rotation.x = -Math.PI / 2;
+    vinylGroup.add(goldRing);
+
+    const masterLight = new THREE.PointLight(0xffd700, 2.8, 14);
+    masterLight.position.set(0, 3.2, 0);
+    vinylGroup.add(masterLight);
+
+    baseScale = 1.38;
+    vinylGroup.scale.set(baseScale, baseScale, baseScale);
+  } else if (track.nowPlaying) {
     const ringGeo = new THREE.RingGeometry(1.65, 1.85, 32);
     const ringMat = new THREE.MeshBasicMaterial({
       color: 0xff0055,
@@ -729,7 +921,8 @@ function createVinylMesh(track, index, stageTracksCount) {
     spot.target = vinylGroup;
     vinylGroup.add(spot);
 
-    vinylGroup.scale.set(1.25, 1.25, 1.25);
+    baseScale = 1.25;
+    vinylGroup.scale.set(baseScale, baseScale, baseScale);
   }
 
   // Metadata attached to user data for Raycasting & orbital carousel rotation
@@ -740,7 +933,7 @@ function createVinylMesh(track, index, stageTracksCount) {
     stageCenterX: stagePos.x,
     stageCenterZ: stagePos.z,
     baseY: posY,
-    baseScale: track.nowPlaying ? 1.25 : 1.0,
+    baseScale,
     discMesh: disc
   };
 
