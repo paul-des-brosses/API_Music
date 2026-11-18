@@ -114,20 +114,6 @@ function buildEnvironment() {
   moonLight.shadow.mapSize.height = 1024;
   scene.add(moonLight);
 
-  // 2. Starfield
-  const starGeo = new THREE.BufferGeometry();
-  const starCount = 1500;
-  const starPos = new Float32Array(starCount * 3);
-  for (let i = 0; i < starCount * 3; i += 3) {
-    starPos[i] = (Math.random() - 0.5) * 400;
-    starPos[i + 1] = Math.random() * 120 + 20;
-    starPos[i + 2] = (Math.random() - 0.5) * 400;
-  }
-  starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-  const starMat = new THREE.PointsMaterial({ color: 0xfff6ea, size: 0.85, transparent: true, opacity: 0.75 });
-  const starField = new THREE.Points(starGeo, starMat);
-  scene.add(starField);
-
   // 3. Water Ocean Plane (Warm deep midnight reflection)
   const waterGeo = new THREE.PlaneGeometry(350, 350);
   const waterMat = new THREE.MeshStandardMaterial({
