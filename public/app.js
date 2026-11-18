@@ -47,9 +47,24 @@ const STAGE_VIEWS = {
    ========================================================================== */
 const container = document.getElementById('canvas-container');
 const scene = new THREE.Scene();
-// Warm twilight night sky & atmospheric fog
-scene.background = new THREE.Color(0x0e0c16);
-scene.fog = new THREE.FogExp2(0x0e0c16, 0.007);
+// Vibrant sunset sky gradient (violet -> pink -> orange horizon) & matching haze
+(function setupSunsetSky() {
+  const c = document.createElement('canvas');
+  c.width = 16;
+  c.height = 512;
+  const g = c.getContext('2d');
+  const grad = g.createLinearGradient(0, 0, 0, 512);
+  grad.addColorStop(0, '#3a2a7a');
+  grad.addColorStop(0.45, '#b04a9c');
+  grad.addColorStop(0.75, '#ff7a5c');
+  grad.addColorStop(1, '#ffc46b');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 16, 512);
+  const skyTex = new THREE.CanvasTexture(c);
+  skyTex.colorSpace = THREE.SRGBColorSpace;
+  scene.background = skyTex;
+  scene.fog = new THREE.FogExp2(0xc8607a, 0.0042);
+})();
 
 const camera = new THREE.PerspectiveCamera(
   45,
@@ -85,10 +100,14 @@ const animatedElements = [];
 
 function buildEnvironment() {
   // 1. Warm Golden Ambient & Festival Lantern Moonlight
-  const ambientLight = new THREE.AmbientLight(0xffeedb, 1.4);
+  const ambientLight = new THREE.AmbientLight(0xffe6cc, 2.3);
   scene.add(ambientLight);
 
-  const moonLight = new THREE.DirectionalLight(0xffd8aa, 1.5);
+  // Sky/ground bounce light for lively colourful shading
+  const hemi = new THREE.HemisphereLight(0xffb3d9, 0x7a5a3a, 1.3);
+  scene.add(hemi);
+
+  const moonLight = new THREE.DirectionalLight(0xffcf94, 2.4);
   moonLight.position.set(40, 85, 40);
   moonLight.castShadow = true;
   moonLight.shadow.mapSize.width = 1024;
@@ -112,9 +131,9 @@ function buildEnvironment() {
   // 3. Water Ocean Plane (Warm deep midnight reflection)
   const waterGeo = new THREE.PlaneGeometry(350, 350);
   const waterMat = new THREE.MeshStandardMaterial({
-    color: 0x090812,
-    roughness: 0.25,
-    metalness: 0.7
+    color: 0x1f6f8f,
+    roughness: 0.3,
+    metalness: 0.45
   });
   const water = new THREE.Mesh(waterGeo, waterMat);
   water.rotation.x = -Math.PI / 2;
@@ -124,14 +143,47 @@ function buildEnvironment() {
   // 4. Main Island Terrain (Warm organic dark turf, grid completely removed)
   const islandGeo = new THREE.CylinderGeometry(52, 58, 2, 48);
   const islandMat = new THREE.MeshStandardMaterial({
-    color: 0x221e26,
-    roughness: 0.85,
-    metalness: 0.1
+    color: 0x6c8a4a,
+    roughness: 0.9,
+    metalness: 0.0
   });
   const island = new THREE.Mesh(islandGeo, islandMat);
   island.position.y = -0.8;
   island.receiveShadow = true;
   scene.add(island);
+
+  // Floating confetti & fireflies for a festive, lively atmosphere
+  const confettiCount = 420;
+  const confettiGeo = new THREE.BufferGeometry();
+  const confettiPos = new Float32Array(confettiCount * 3);
+  const confettiCol = new Float32Array(confettiCount * 3);
+  const palette = [0xff4d8d, 0xffd23f, 0x3bd6c6, 0x7a5cff, 0xff8a3d, 0x6bff8a].map((h) => new THREE.Color(h));
+  for (let i = 0; i < confettiCount; i++) {
+    confettiPos[i * 3] = (Math.random() - 0.5) * 100;
+    confettiPos[i * 3 + 1] = Math.random() * 28 + 1;
+    confettiPos[i * 3 + 2] = (Math.random() - 0.5) * 100;
+    const col = palette[i % palette.length];
+    confettiCol[i * 3] = col.r;
+    confettiCol[i * 3 + 1] = col.g;
+    confettiCol[i * 3 + 2] = col.b;
+  }
+  confettiGeo.setAttribute('position', new THREE.BufferAttribute(confettiPos, 3));
+  confettiGeo.setAttribute('color', new THREE.BufferAttribute(confettiCol, 3));
+  const confetti = new THREE.Points(
+    confettiGeo,
+    new THREE.PointsMaterial({ size: 0.45, vertexColors: true, transparent: true, opacity: 0.95, fog: false })
+  );
+  scene.add(confetti);
+
+  animatedElements.push((time) => {
+    const arr = confettiGeo.attributes.position.array;
+    for (let i = 0; i < confettiCount; i++) {
+      arr[i * 3 + 1] -= 0.02 + (i % 5) * 0.004;
+      arr[i * 3] += Math.sin(time * 0.8 + i) * 0.01;
+      if (arr[i * 3 + 1] < 0.5) arr[i * 3 + 1] = 29;
+    }
+    confettiGeo.attributes.position.needsUpdate = true;
+  });
 
   // 5. Build Stages & Central Plaza Architecture
   buildCentralPlaza();
