@@ -622,7 +622,7 @@ function buildReggaeOasis() {
     flameCore.scale.setScalar(1 + Math.sin(time * 12) * 0.15);
   });
 
-  createStageSign("🌴 SUNKEN OASIS", 15, 8.5, 21, 0x44c965);
+  createStageSign("🌴 ONE LOVE OASIS", 15, 8.5, 21, 0x44c965);
   scene.add(group);
 }
 

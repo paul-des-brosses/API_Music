@@ -37,7 +37,7 @@ export const STAGES = {
   },
   REGGAE: {
     id: "REGGAE",
-    name: "Sunken Beach Oasis",
+    name: "One Love Oasis",
     subtitle: "Chill & Roots Island",
     position: { x: 15, y: 0, z: 21 },
     color: "#2ecc71",
