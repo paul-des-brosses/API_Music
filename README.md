@@ -21,19 +21,6 @@ Si un morceau est **en cours d'écoute en direct**, il brille d'un halo pulsant 
 
 ---
 
-## 📋 Respect des Contraintes & Règles du Sujet
-
-| Règle du sujet | Statut | Implémentation |
-| :--- | :---: | :--- |
-| **Le navigateur parle uniquement à votre serveur** | ✅ | Le front n'appelle jamais `last.fm`. Les données et **les pochettes d'albums** passent par le serveur (`/api/recent-tracks` et `/api/image-proxy`). |
-| **La clé API reste sur le serveur dans une variable d'env** | ✅ | Clé stockée dans `.env` (`LASTFM_API_KEY`), absente du code client et ignorée par Git via `.gitignore`. |
-| **Le serveur garde les réponses en cache** | ✅ | Cache mémoire avec TTL de 60s. Recharger la page ne sollicite pas l'API Last.fm. |
-| **En cas de panne Last.fm, affichage utile** | ✅ | Fallback automatique sur les dernières données en cache + bandeau d'alerte contextuel non intrusif (jamais d'écran blanc). |
-| **Fonctionne sur smartphone et laptop** | ✅ | Interface responsive (CSS clamp & flexbox/grid), contrôles tactiles OrbitControls (glisser, pincer pour zoomer). |
-| **`docker compose up` démarre tout** | ✅ | Image légère Alpine Node.js prête à l'emploi. |
-
----
-
 ## 🚀 Démarrage Rapide
 
 ### Option 1 : Avec Docker (Recommandé pour l'évaluation)
@@ -104,28 +91,6 @@ flowchart LR
     TagsAPI -.-> Classifier
     Classifier --> Cache
 ```
-
----
-
-## 🎤 Guide pour la Démo de 3 Minutes en Classe
-
-### 1. Présentation (1 minute)
-* "Pour répondre au sujet *What your music looks like*, j'ai voulu représenter la diversité de mes écoutes (qui vont de la techno au classique en passant par le rap) sous la forme d'un **Festival 3D immersif**."
-* "Chaque scène correspond à une ambiance musicale réelle. Les morceaux récemment scrobbles sur Last.fm sont projetés en 3D sous forme de disques vinyles avec leurs vraies pochettes."
-* "Si j'écoute un morceau en direct, la scène s'illumine et le vinyle brille avec la mention *EN DIRECT*."
-
-### 2. Démonstration Technique (1 minute)
-* **Preuve du Cache :** Montrer l'inspecteur réseau (F12) $\rightarrow$ Recharger la page : l'indicateur affiche `En cache (45s)` et aucune requête ne part vers Last.fm.
-* **Preuve de la Sécurité :** Montrer que l'onglet Réseau ne contient aucune requête sortante vers le domaine Last.fm, et que la clé API n'apparaît nulle part dans le code source du navigateur.
-* **Preuve de Résilience :** En cas d'indisponibilité de Last.fm, le serveur renvoie automatiquement les dernières données valides en cache et l'interface affiche un bandeau d'alerte contextuel sans aucun écran blanc.
-
-### 3. Deux Questions Fréquentes du Jury & Réponses Prêtes
-
-* **Q1 : Comment le serveur sait-il sur quelle scène placer un morceau sans BPM ?**
-  > *"Last.fm ne fournit pas de BPM dans son flux de tracks récents. Pour contourner cela intelligemment, mon serveur extrait les tags de l'artiste (`artist.getTopTags`), les met en cache, et applique un algorithme de scoring thématique pour orienter automatiquement le morceau vers la scène adéquate (Bunker Techno, Block Rap, Oasis Reggae, etc.)."*
-
-* **Q2 : Pourquoi les images d'albums passent-elles aussi par ton serveur ?**
-  > *"La consigne stipule : 'In the browser's Network tab, no request goes to Last.fm'. Si le front chargeait les images directement depuis le CDN de Last.fm, l'inspecteur réseau afficherait des requêtes vers Last.fm. J'ai donc créé un endpoint `/api/image-proxy` avec cache mémoire pour que 100% du trafic web reste strictement entre le navigateur et mon propre serveur."*
 
 ---
 
