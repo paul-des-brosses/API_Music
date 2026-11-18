@@ -38,10 +38,21 @@ const imageBufferCache = new Map();
  * Image proxy endpoint to ensure ZERO requests leave the browser to Last.fm CDN.
  * Fulfills rule: "In the browser's Network tab, no request goes to Last.fm."
  */
+const ALLOWED_IMAGE_HOSTS = ["lastfm.freetls.fastly.net", ".last.fm", ".audioscrobbler.com", ".fastly.net"];
+
 app.get("/api/image-proxy", async (req, res) => {
   const imageUrl = req.query.url;
-  if (!imageUrl || (!imageUrl.startsWith("http://") && !imageUrl.startsWith("https://"))) {
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(String(imageUrl || ""));
+  } catch {
     return res.status(400).send("Invalid image URL");
+  }
+  const hostOk =
+    (parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:") &&
+    ALLOWED_IMAGE_HOSTS.some((h) => parsedUrl.hostname === h || parsedUrl.hostname.endsWith(h));
+  if (!hostOk) {
+    return res.status(403).send("Disallowed image host");
   }
 
   if (imageBufferCache.has(imageUrl)) {
@@ -110,6 +121,9 @@ app.get("/api/preview", async (req, res) => {
     const result = hit
       ? { found: true, title: hit.title, artist: hit.artist?.name, audioUrl: `/api/preview-audio?id=${hit.id}` }
       : { found: false };
+    if (previewCache.size >= 200) {
+      previewCache.delete(previewCache.keys().next().value);
+    }
     previewCache.set(key, result);
     return res.json(result);
   } catch (err) {

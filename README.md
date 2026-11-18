@@ -13,9 +13,9 @@ Chaque morceau écouté récemment est automatiquement analysé, catégorisé se
 * **⚡ The Neon Warehouse (Bunker Rave) :** Pour l'électro, la techno, le hardtek, la trance et le frenchcore (lasers néons, stroboscopes réactifs et mur de son Sound System).
 * **🎤 The Urban Party :** Pour le rap, hip-hop, trap et drill (briques, silhouettes de buildings new-yorkais et lampadaire ambré).
 * **🌴 One Love Oasis :** Pour le reggae, dub, ska et sonorités acoustiques/chill (plage de sable, palmiers stylisés et feu de camp).
-* **🎻 The Crystal Amphitheater :** Pour le classique, l'ambient, les musiques de film et le piano (colonnes de marbre et dôme céleste).
-* **🔥 The Volcanic Pit :** Pour le rock, metal, grunge et punk (rochers volcaniques et flammes ardentes).
-* **✨ La Place Centrale (Sound Plaza) :** Une place ouverte avec un totem cristallin rotatif reliant les 5 scènes en étoile par des allées illuminées.
+* **🎻 The Crystal Amphitheater :** Pour le classique, l'ambient, les musiques de film et le piano (petit amphithéâtre en demi-cercle avec gradins, colonnes et architrave dorée).
+* **🔥 The Volcanic Pit :** Pour le rock, metal, grunge et punk (cercle volcanique avec 4 braseros enflammés aux quatre coins).
+* **🏆 La Place Centrale (Masterclass) :** Une place centrale dorée avec une coupe en or, le vinyle *Outsider* de Kavinsky et l'inscription courbée **MASTERCLASS**, reliant les 5 scènes par des allées illuminées.
 
 Si un morceau est **en cours d'écoute en direct**, il brille d'un halo pulsant et un projecteur le suit automatiquement !
 
