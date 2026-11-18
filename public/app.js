@@ -628,63 +628,98 @@ function buildReggaeOasis() {
   scene.add(group);
 }
 
-// 5. Classical Amphitheater (Marbre champagne chaleureux, colonnes à la bougie & lueur dorée acoustique)
+// 5. Classical Amphitheater (Petit amphithéâtre simplifié : gradins en demi-cercle, colonnade & architrave dorée)
 function buildClassicalAmphitheater() {
   const group = new THREE.Group();
   group.position.set(-15, 0, 21);
 
-  // Warm Antique Marble circular base
-  const baseGeo = new THREE.CylinderGeometry(11, 12, 1, 32);
-  const baseMat = new THREE.MeshStandardMaterial({ color: 0x3d3035, roughness: 0.35, metalness: 0.1 });
-  const base = new THREE.Mesh(baseGeo, baseMat);
-  base.position.y = 0.5;
+  const marbleFloorMat = new THREE.MeshStandardMaterial({ color: 0x4b3d42, roughness: 0.4, metalness: 0.08 });
+  const tierMat = new THREE.MeshStandardMaterial({ color: 0x9b8a82, roughness: 0.45 });
+  const colMat = new THREE.MeshStandardMaterial({ color: 0xd4c5b9, roughness: 0.3 });
+  const goldTrimMat = new THREE.MeshStandardMaterial({ color: 0xe6b86a, roughness: 0.25, metalness: 0.65 });
+
+  // Circular orchestra floor + subtle golden rim
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(11.2, 12, 0.8, 32), marbleFloorMat);
+  base.position.y = 0.4;
   group.add(base);
 
-  // Semicircle Alabaster & Candlelit Marble Columns (shared geometries & materials)
-  const radius = 8.5;
-  const colCount = 10;
-  const colGeo = new THREE.CylinderGeometry(0.35, 0.4, 7, 12);
-  const colMat = new THREE.MeshStandardMaterial({ color: 0xb5a396, roughness: 0.3 });
-  const candleGeo = new THREE.SphereGeometry(0.14, 8, 8);
-  const candleMat = new THREE.MeshBasicMaterial({ color: 0xffd27d });
-  for (let i = 0; i < colCount; i++) {
-    const angle = (Math.PI / (colCount - 1)) * i;
-    const x = Math.cos(angle) * radius;
-    const z = -Math.sin(angle) * radius;
+  const rim = new THREE.Mesh(new THREE.RingGeometry(7.0, 7.25, 32), goldTrimMat);
+  rim.rotation.x = -Math.PI / 2;
+  rim.position.y = 0.82;
+  group.add(rim);
 
-    const col = new THREE.Mesh(colGeo, colMat);
-    col.position.set(x, 4, z);
-    group.add(col);
+  // 3 stepped semicircular amphitheater tiers along the back (-Z)
+  const tierSpecs = [
+    { inner: 7.3, outer: 8.6, height: 0.9 },
+    { inner: 8.6, outer: 9.9, height: 1.8 },
+    { inner: 9.9, outer: 11.2, height: 2.7 }
+  ];
+  for (const t of tierSpecs) {
+    const shape = new THREE.Shape();
+    shape.absarc(0, 0, t.outer, 0, Math.PI, false);
+    shape.absarc(0, 0, t.inner, Math.PI, 0, true);
+    shape.closePath();
 
-    // Candle beacon atop each column
-    const candle = new THREE.Mesh(candleGeo, candleMat);
-    candle.position.set(x, 7.6, z);
-    group.add(candle);
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: t.height, bevelEnabled: false, curveSegments: 24 });
+    const mesh = new THREE.Mesh(geo, tierMat);
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.y = 0.8;
+    group.add(mesh);
   }
 
-  // Warm Golden Chandelier / Candlelit Acoustic Glow
+  // Semicircle colonnade on the top tier + curved architrave cornice
+  const colRadius = 10.55;
+  const colCount = 7;
+  const colGeo = new THREE.CylinderGeometry(0.28, 0.34, 4.2, 12);
+  const capGeo = new THREE.BoxGeometry(0.85, 0.28, 0.85);
+  for (let i = 0; i < colCount; i++) {
+    const angle = (Math.PI / (colCount - 1)) * i;
+    const x = Math.cos(angle) * colRadius;
+    const z = -Math.sin(angle) * colRadius;
+
+    const col = new THREE.Mesh(colGeo, colMat);
+    col.position.set(x, 3.5 + 2.1, z);
+    group.add(col);
+
+    const cap = new THREE.Mesh(capGeo, goldTrimMat);
+    cap.position.set(x, 3.5 + 4.25, z);
+    group.add(cap);
+  }
+
+  // Curved top architrave beam uniting the columns
+  const archShape = new THREE.Shape();
+  archShape.absarc(0, 0, colRadius + 0.45, 0, Math.PI, false);
+  archShape.absarc(0, 0, colRadius - 0.45, Math.PI, 0, true);
+  archShape.closePath();
+  const archGeo = new THREE.ExtrudeGeometry(archShape, { depth: 0.48, bevelEnabled: false, curveSegments: 24 });
+  const arch = new THREE.Mesh(archGeo, colMat);
+  arch.rotation.x = -Math.PI / 2;
+  arch.position.y = 7.85;
+  group.add(arch);
+
+  // Warm Golden Acoustic Glow
   const domeLight = new THREE.PointLight(0xffc57a, 5.2, 30);
-  domeLight.position.set(0, 5, -2);
+  domeLight.position.set(0, 5.5, -1);
   group.add(domeLight);
 
-  createStageSign("🎻 CRYSTAL DOME", -15, 8.8, 21, 0xe2ba77);
+  createStageSign("🎻 CRYSTAL DOME", -15, 10.2, 21, 0xe2ba77);
   scene.add(group);
 }
 
-// 6. Metal & Rock Volcanic Pit (Roches volcaniques sombres, braises et lueur de lave ardente)
+// 6. Metal & Rock Volcanic Pit (Cercle volcanique & 4 flammes aux 4 coins)
 function buildMetalPit() {
   const group = new THREE.Group();
   group.position.set(-25, 0, -8);
 
-  // Dark volcanic stone
-  const stoneGeo = new THREE.CylinderGeometry(9.5, 10.5, 1, 20);
-  const stoneMat = new THREE.MeshStandardMaterial({ color: 0x221315, roughness: 0.95 });
+  // Dark volcanic basalt circle
+  const stoneGeo = new THREE.CylinderGeometry(9.6, 10.6, 0.9, 24);
+  const stoneMat = new THREE.MeshStandardMaterial({ color: 0x221315, roughness: 0.92 });
   const stone = new THREE.Mesh(stoneGeo, stoneMat);
-  stone.position.y = 0.5;
+  stone.position.y = 0.45;
   group.add(stone);
 
-  // Glowing lava circle / magma fissure on the floor
-  const lavaGeo = new THREE.RingGeometry(3.5, 5.5, 24);
+  // Glowing lava circle on the floor
+  const lavaGeo = new THREE.RingGeometry(3.4, 5.2, 24);
   const lavaMat = new THREE.MeshBasicMaterial({
     color: 0xff3b00,
     side: THREE.DoubleSide,
@@ -693,20 +728,73 @@ function buildMetalPit() {
   });
   const lava = new THREE.Mesh(lavaGeo, lavaMat);
   lava.rotation.x = -Math.PI / 2;
-  lava.position.y = 1.02;
+  lava.position.y = 0.92;
   group.add(lava);
 
+  // 4 corner flame braziers around the circle (shared geometries & materials)
+  const brazierGeo = new THREE.CylinderGeometry(0.85, 0.65, 0.9, 12);
+  const brazierMat = new THREE.MeshStandardMaterial({ color: 0x2b1d1d, roughness: 0.85, metalness: 0.4 });
+  const emberGeo = new THREE.CylinderGeometry(0.72, 0.72, 0.12, 12);
+  const emberMat = new THREE.MeshBasicMaterial({ color: 0xff3300 });
+
+  const outerFlameGeo = new THREE.ConeGeometry(0.62, 2.0, 10);
+  const outerFlameMat = new THREE.MeshBasicMaterial({ color: 0xff4500, transparent: true, opacity: 0.9 });
+  const midFlameGeo = new THREE.ConeGeometry(0.42, 1.5, 10);
+  const midFlameMat = new THREE.MeshBasicMaterial({ color: 0xff8800, transparent: true, opacity: 0.95 });
+  const coreFlameGeo = new THREE.ConeGeometry(0.22, 0.95, 8);
+  const coreFlameMat = new THREE.MeshBasicMaterial({ color: 0xffe066 });
+
+  const cornerFlames = [];
+  const cornerDist = 7.6;
+  const cornerAngles = [Math.PI * 0.25, Math.PI * 0.75, Math.PI * 1.25, Math.PI * 1.75];
+
+  cornerAngles.forEach((angle, idx) => {
+    const fx = Math.cos(angle) * cornerDist;
+    const fz = Math.sin(angle) * cornerDist;
+
+    const brazier = new THREE.Mesh(brazierGeo, brazierMat);
+    brazier.position.set(fx, 1.35, fz);
+    group.add(brazier);
+
+    const ember = new THREE.Mesh(emberGeo, emberMat);
+    ember.position.set(fx, 1.82, fz);
+    group.add(ember);
+
+    const flameGroup = new THREE.Group();
+    flameGroup.position.set(fx, 1.85, fz);
+
+    const outer = new THREE.Mesh(outerFlameGeo, outerFlameMat);
+    outer.position.y = 0.95;
+    flameGroup.add(outer);
+
+    const mid = new THREE.Mesh(midFlameGeo, midFlameMat);
+    mid.position.set(0.08, 0.75, -0.05);
+    flameGroup.add(mid);
+
+    const core = new THREE.Mesh(coreFlameGeo, coreFlameMat);
+    core.position.y = 0.5;
+    flameGroup.add(core);
+
+    group.add(flameGroup);
+    cornerFlames.push({ flameGroup, phase: idx * 1.7 });
+  });
+
   // Fiery Pit Light
-  const flameLight = new THREE.PointLight(0xff3300, 5.5, 28);
-  flameLight.position.set(0, 2.2, 0);
+  const flameLight = new THREE.PointLight(0xff3b00, 5.8, 30);
+  flameLight.position.set(0, 2.5, 0);
   group.add(flameLight);
 
   animatedElements.push((time) => {
-    flameLight.intensity = 4.8 + Math.sin(time * 10) * 1.5;
+    flameLight.intensity = 4.8 + Math.sin(time * 10) * 1.4;
     lava.scale.setScalar(1 + Math.sin(time * 4) * 0.05);
+    for (const f of cornerFlames) {
+      const flicker = 1 + Math.sin(time * 11 + f.phase) * 0.16 + Math.cos(time * 7 + f.phase) * 0.08;
+      f.flameGroup.scale.set(1, flicker, 1);
+      f.flameGroup.rotation.y = time * 1.5 + f.phase;
+    }
   });
 
-  createStageSign("🔥 VOLCANIC PIT", -25, 8, -8, 0xff4810);
+  createStageSign("🔥 VOLCANIC PIT", -25, 8.2, -8, 0xff4810);
   scene.add(group);
 }
 
