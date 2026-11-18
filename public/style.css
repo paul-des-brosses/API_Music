@@ -626,3 +626,7 @@ body, html {
     font-size: 18px;
   }
 }
+
+.btn-play { border: none; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 700; }
+.btn-play:disabled { opacity: 0.6; cursor: wait; }
+.play-msg { font-size: 11px; color: var(--text-dim); margin-left: 10px; align-self: center; }

@@ -1120,6 +1120,7 @@ const cardLink = document.getElementById('card-link');
 
 function openTrackModal(track) {
   if (!track) return;
+  resetPlayer();
   STATE.selectedTrack = track;
 
   cardTrackName.textContent = track.name;
@@ -1164,7 +1165,62 @@ function openTrackModal(track) {
 function closeTrackModal() {
   modal.classList.add('hidden');
   STATE.selectedTrack = null;
+  cardAudio.pause();
+  cardAudio.removeAttribute('src');
 }
+
+/* --- Audio preview (30s) through the local proxy --- */
+const cardPlay = document.getElementById('card-play');
+const cardAudio = document.getElementById('card-audio');
+const cardPlayMsg = document.getElementById('card-play-msg');
+
+function resetPlayer() {
+  cardAudio.pause();
+  cardAudio.removeAttribute('src');
+  cardPlay.textContent = '▶ Écouter un extrait';
+  cardPlay.disabled = false;
+  cardPlayMsg.textContent = '';
+}
+
+cardPlay.addEventListener('click', async () => {
+  const track = STATE.selectedTrack;
+  if (!track) return;
+
+  if (!cardAudio.paused) {
+    cardAudio.pause();
+    cardPlay.textContent = '▶ Écouter un extrait';
+    return;
+  }
+  if (cardAudio.src && cardAudio.currentTime > 0 && !cardAudio.ended) {
+    cardAudio.play();
+    cardPlay.textContent = '⏸ Pause';
+    return;
+  }
+
+  cardPlay.disabled = true;
+  cardPlayMsg.textContent = 'Recherche de l\'extrait…';
+  try {
+    const res = await fetch(`/api/preview?artist=${encodeURIComponent(track.artist)}&track=${encodeURIComponent(track.name)}`);
+    const data = await res.json();
+    if (!data.found) {
+      cardPlayMsg.textContent = 'Aucun extrait disponible pour ce titre.';
+      cardPlay.disabled = false;
+      return;
+    }
+    cardAudio.src = data.audioUrl;
+    await cardAudio.play();
+    cardPlay.textContent = '⏸ Pause';
+    cardPlayMsg.textContent = 'Extrait de 30 s';
+  } catch (e) {
+    cardPlayMsg.textContent = 'Lecture impossible.';
+  }
+  cardPlay.disabled = false;
+});
+
+cardAudio.addEventListener('ended', () => {
+  cardPlay.textContent = '▶ Réécouter';
+  cardAudio.currentTime = 0;
+});
 
 /* ==========================================================================
    CAMERA TRANSITIONS (Smooth Lerp to Stages)

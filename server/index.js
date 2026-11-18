@@ -81,6 +81,65 @@ app.get("/api/image-proxy", async (req, res) => {
 });
 
 /**
+ * Audio preview (30s) via Deezer public API, fully proxied by this server
+ * (no API key needed; browser never contacts Deezer or Last.fm directly).
+ */
+const previewCache = new Map();
+
+app.get("/api/preview", async (req, res) => {
+  const artist = String(req.query.artist || "").trim();
+  const track = String(req.query.track || "").trim();
+  if (!artist || !track) return res.status(400).json({ found: false, error: "Paramètres manquants" });
+
+  const key = `${artist}|${track}`.toLowerCase();
+  if (previewCache.has(key)) return res.json(previewCache.get(key));
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const q = encodeURIComponent(`${artist} ${track}`);
+    const r = await fetch(`https://api.deezer.com/search?q=${q}&limit=5`, { signal: controller.signal });
+    clearTimeout(timeout);
+    const data = await r.json();
+    const norm = (s) => (s || "").toLowerCase();
+    const hit =
+      (data.data || []).find(
+        (d) => d.preview && norm(d.artist?.name).includes(norm(artist).split(" ")[0]) && norm(d.title).includes(norm(track).slice(0, 8))
+      ) || (data.data || []).find((d) => d.preview);
+
+    const result = hit
+      ? { found: true, title: hit.title, artist: hit.artist?.name, audioUrl: `/api/preview-audio?id=${hit.id}` }
+      : { found: false };
+    previewCache.set(key, result);
+    return res.json(result);
+  } catch (err) {
+    console.warn("[Preview] lookup failed:", err.message);
+    return res.status(502).json({ found: false, error: "Service d'extraits indisponible" });
+  }
+});
+
+app.get("/api/preview-audio", async (req, res) => {
+  const id = String(req.query.id || "");
+  if (!/^\d+$/.test(id)) return res.status(400).send("Invalid id");
+  try {
+    // Fetch a fresh signed preview URL (they expire quickly)
+    const info = await (await fetch(`https://api.deezer.com/track/${id}`)).json();
+    const url = info.preview;
+    if (!url || !new URL(url).hostname.endsWith(".dzcdn.net")) return res.status(404).send("No preview");
+    const audio = await fetch(url);
+    if (!audio.ok) throw new Error(`HTTP ${audio.status}`);
+    const buf = Buffer.from(await audio.arrayBuffer());
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader("Content-Length", buf.length);
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    return res.send(buf);
+  } catch (err) {
+    console.warn("[Preview] audio failed:", err.message);
+    return res.status(502).send("Could not fetch audio");
+  }
+});
+
+/**
  * Fetch top tags for an artist from Last.fm (fast non-blocking lookup)
  */
 async function fetchArtistTags(artist) {
