@@ -4,3 +4,5 @@ node_modules
 .env
 dist
 npm-debug.log
+
+demo_video.mp4

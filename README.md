@@ -2,6 +2,12 @@
 
 > Projet WebTech — Visualisation 3D interactive des écoutes musicales récentes Last.fm sous forme d'un festival immersif.
 
+## 🎬 Démo vidéo
+
+<video src="https://github.com/paul-des-brosses/API_Music/releases/download/v1.0/demo_video.mp4" controls width="100%"></video>
+
+> 👉 [Voir / télécharger la vidéo de démo (`demo_video.mp4`)](https://github.com/paul-des-brosses/API_Music/releases/download/v1.0/demo_video.mp4)
+
 ---
 
 ## 🌟 Le Concept : L'Archipel Musical / Festival des Genres
