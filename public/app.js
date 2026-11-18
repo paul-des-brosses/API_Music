@@ -86,7 +86,7 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.maxPolarAngle = Math.PI / 2.05; // Don't go below ground
 controls.minDistance = 8;
-controls.maxDistance = 180;
+controls.maxDistance = 320;
 controls.target.set(0, 0, 0);
 
 const textureLoader = new THREE.TextureLoader();
@@ -1225,12 +1225,30 @@ cardAudio.addEventListener('ended', () => {
 /* ==========================================================================
    CAMERA TRANSITIONS (Smooth Lerp to Stages)
    ========================================================================== */
+/* Pull the camera back on narrow/portrait screens so the whole scene stays in frame */
+function adaptCamToAspect(view) {
+  const aspect = window.innerWidth / window.innerHeight;
+  const k = aspect < 1.2 ? Math.min(2.6, 1 + (1.2 / aspect - 1) * 0.75) : 1;
+  const t = new THREE.Vector3(view.target.x, view.target.y, view.target.z);
+  const c = new THREE.Vector3(view.cam.x, view.cam.y, view.cam.z);
+  return t.add(c.sub(t).multiplyScalar(k));
+}
+
+window.addEventListener('resize', () => {
+  if (STATE.cameraAnimation) return;
+  const key = STATE.activeStageId || 'GLOBAL';
+  const view = STAGE_VIEWS[key] || STAGE_VIEWS.GLOBAL;
+  camera.position.copy(adaptCamToAspect(view));
+});
+
 function flyToStage(stageKey) {
   const view = STAGE_VIEWS[stageKey] || STAGE_VIEWS.GLOBAL;
+  STATE.activeStageId = stageKey;
+  const endCam = adaptCamToAspect(view);
 
   STATE.cameraAnimation = {
     startCam: camera.position.clone(),
-    endCam: new THREE.Vector3(view.cam.x, view.cam.y, view.cam.z),
+    endCam,
     startTarget: controls.target.clone(),
     endTarget: new THREE.Vector3(view.target.x, view.target.y, view.target.z),
     progress: 0,
@@ -1340,6 +1358,7 @@ function initEvents() {
    BOOTSTRAP
    ========================================================================== */
 setLoaderStep(20, 'Initialisation du moteur Three.js...');
+camera.position.copy(adaptCamToAspect(STAGE_VIEWS.GLOBAL));
 buildEnvironment();
 setLoaderStep(45, 'Construction des scènes et éclairages...');
 initEvents();

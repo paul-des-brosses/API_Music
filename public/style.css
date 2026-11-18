@@ -630,3 +630,13 @@ body, html {
 .btn-play { border: none; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 700; }
 .btn-play:disabled { opacity: 0.6; cursor: wait; }
 .play-msg { font-size: 11px; color: var(--text-dim); margin-left: 10px; align-self: center; }
+
+.modal-close { z-index: 5; background-color: rgba(10, 12, 20, 0.7); }
+@media (max-width: 900px) {
+  .stage-nav { bottom: 12px; }
+  .stage-btn { padding: 6px 10px; font-size: 11px; }
+  .nav-scroll-container {
+    -webkit-mask-image: linear-gradient(to right, #000 88%, transparent 100%);
+    mask-image: linear-gradient(to right, #000 88%, transparent 100%);
+  }
+}
