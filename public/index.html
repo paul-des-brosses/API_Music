@@ -31,14 +31,6 @@
 
   <!-- HUD Interface -->
   <header class="hud-header">
-    <div class="brand">
-      <div class="logo-badge">🎪</div>
-      <div class="brand-text">
-        <h1>SOUNDLAND 3D</h1>
-        <p class="subtitle">Festival de mes écoutes récentes</p>
-      </div>
-    </div>
-
     <!-- Live Scrobble & Cache Status -->
     <div class="status-panel">
       <div id="now-playing-pill" class="status-pill hidden">
@@ -48,7 +40,6 @@
       </div>
 
       <div id="cache-pill" class="status-pill cache-indicator" title="Le serveur met en cache les données Last.fm pour éviter de saturer l'API">
-        <span class="cache-icon">⚡</span>
         <span id="cache-status-text">Initialisation...</span>
       </div>
 
@@ -65,13 +56,6 @@
       <span id="alert-message">Last.fm est temporairement inaccessible. Données de secours affichées.</span>
     </div>
     <button id="alert-close" class="alert-close">&times;</button>
-  </div>
-
-  <!-- Controls Instructions Overlay -->
-  <div id="hint-controls" class="hint-controls">
-    <span>🖱️ Tourner / Glisser pour naviguer</span>
-    <span>🔍 Molette / Pincer pour zoomer</span>
-    <span>💿 Cliquer sur un vinyle pour écouter</span>
   </div>
 
   <!-- Bottom Stage Navigation Bar -->
