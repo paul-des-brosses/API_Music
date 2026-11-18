@@ -152,38 +152,6 @@ function buildEnvironment() {
   island.receiveShadow = true;
   scene.add(island);
 
-  // Floating confetti & fireflies for a festive, lively atmosphere
-  const confettiCount = 420;
-  const confettiGeo = new THREE.BufferGeometry();
-  const confettiPos = new Float32Array(confettiCount * 3);
-  const confettiCol = new Float32Array(confettiCount * 3);
-  const palette = [0xff4d8d, 0xffd23f, 0x3bd6c6, 0x7a5cff, 0xff8a3d, 0x6bff8a].map((h) => new THREE.Color(h));
-  for (let i = 0; i < confettiCount; i++) {
-    confettiPos[i * 3] = (Math.random() - 0.5) * 100;
-    confettiPos[i * 3 + 1] = Math.random() * 28 + 1;
-    confettiPos[i * 3 + 2] = (Math.random() - 0.5) * 100;
-    const col = palette[i % palette.length];
-    confettiCol[i * 3] = col.r;
-    confettiCol[i * 3 + 1] = col.g;
-    confettiCol[i * 3 + 2] = col.b;
-  }
-  confettiGeo.setAttribute('position', new THREE.BufferAttribute(confettiPos, 3));
-  confettiGeo.setAttribute('color', new THREE.BufferAttribute(confettiCol, 3));
-  const confetti = new THREE.Points(
-    confettiGeo,
-    new THREE.PointsMaterial({ size: 0.45, vertexColors: true, transparent: true, opacity: 0.95, fog: false })
-  );
-  scene.add(confetti);
-
-  animatedElements.push((time) => {
-    const arr = confettiGeo.attributes.position.array;
-    for (let i = 0; i < confettiCount; i++) {
-      arr[i * 3 + 1] -= 0.02 + (i % 5) * 0.004;
-      arr[i * 3] += Math.sin(time * 0.8 + i) * 0.01;
-      if (arr[i * 3 + 1] < 0.5) arr[i * 3 + 1] = 29;
-    }
-    confettiGeo.attributes.position.needsUpdate = true;
-  });
 
   // 5. Build Stages & Central Plaza Architecture
   buildCentralPlaza();
