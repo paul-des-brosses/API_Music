@@ -1063,8 +1063,8 @@ const cacheStatusText = document.getElementById('cache-status-text');
 const cachePill = document.getElementById('cache-pill');
 const nowPlayingPill = document.getElementById('now-playing-pill');
 const nowTitle = document.getElementById('now-title');
-const alertBanner = document.getElementById('alert-banner');
-const alertMessage = document.getElementById('alert-message');
+const connectionPill = document.getElementById('connection-pill');
+const connectionText = document.getElementById('connection-text');
 const loader = document.getElementById('loader');
 const loaderSub = document.getElementById('loader-sub');
 const loaderProgress = document.getElementById('loader-progress');
@@ -1102,11 +1102,11 @@ async function fetchTracks() {
       cacheStatusText.textContent = 'En direct de Last.fm';
     }
 
-    // Handle Offline / Simulation Warning
+    // Update Connection Status Pill (non-intrusive top-left indicator)
     if (data.warning || !res.ok) {
-      showAlert(data.warning || data.error);
+      setConnectionStatus(false, data.warning || data.error);
     } else {
-      hideAlert();
+      setConnectionStatus(true);
     }
 
     // Now Playing Track
@@ -1131,18 +1131,19 @@ async function fetchTracks() {
     }
   } catch (err) {
     console.error('Fetch error:', err);
-    showAlert(`Erreur serveur : ${err.message}`);
+    setConnectionStatus(false, err.message);
     if (loader) loader.classList.add('hidden');
   }
 }
 
-function showAlert(msg) {
-  alertMessage.textContent = msg;
-  alertBanner.classList.remove('hidden');
-}
-
-function hideAlert() {
-  alertBanner.classList.add('hidden');
+function setConnectionStatus(isConnected, detail = '') {
+  if (!connectionPill || !connectionText) return;
+  connectionPill.classList.toggle('connected', isConnected);
+  connectionPill.classList.toggle('disconnected', !isConnected);
+  connectionText.textContent = isConnected ? 'Connecté' : 'Déconnecté';
+  connectionPill.title = isConnected
+    ? 'Connecté à Last.fm (cliquer pour rafraîchir)'
+    : `Déconnecté (${detail || 'Last.fm inaccessible'}) — cliquer pour réessayer`;
 }
 
 /* ==========================================================================
@@ -1435,10 +1436,13 @@ function initEvents() {
     if (e.target === modal) closeTrackModal();
   });
 
-  // Alert Close
-  document.getElementById('alert-close').addEventListener('click', hideAlert);
+  // Connection status retry button & Manual Refresh Button
+  if (connectionPill) {
+    connectionPill.addEventListener('click', () => {
+      fetchTracks();
+    });
+  }
 
-  // Manual Refresh Button
   document.getElementById('btn-refresh').addEventListener('click', () => {
     fetchTracks();
   });

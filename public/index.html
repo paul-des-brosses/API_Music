@@ -31,7 +31,13 @@
 
   <!-- HUD Interface -->
   <header class="hud-header">
-    <!-- Live Scrobble & Cache Status -->
+    <!-- Connection Status (Top-Left) -->
+    <button id="connection-pill" class="status-pill connection-pill connected" type="button" title="Connecté à Last.fm (cliquer pour rafraîchir)">
+      <span class="conn-dot"></span>
+      <span id="connection-text">Connecté</span>
+    </button>
+
+    <!-- Live Scrobble & Cache Status (Top-Right) -->
     <div class="status-panel">
       <div id="now-playing-pill" class="status-pill hidden">
         <span class="live-dot"></span>
@@ -48,15 +54,6 @@
       </button>
     </div>
   </header>
-
-  <!-- Notification Banner (For Errors or Offline Mode) -->
-  <div id="alert-banner" class="alert-banner hidden">
-    <div class="alert-content">
-      <span class="alert-icon">⚠️</span>
-      <span id="alert-message">Last.fm est temporairement inaccessible. Données de secours affichées.</span>
-    </div>
-    <button id="alert-close" class="alert-close">&times;</button>
-  </div>
 
   <!-- Bottom Stage Navigation Bar -->
   <nav class="stage-nav">
