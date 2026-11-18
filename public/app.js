@@ -1080,7 +1080,7 @@ async function fetchTracks() {
   try {
     setLoaderStep(65, 'Connexion au proxy Last.fm...');
 
-    const res = await fetch('/api/recent-tracks');
+    const res = await fetch('api/recent-tracks');
     const data = await res.json();
 
     if (!res.ok && !data.fromCache) {
@@ -1287,7 +1287,7 @@ cardPlay.addEventListener('click', async () => {
   cardPlay.disabled = true;
   cardPlayMsg.textContent = 'Recherche de l\'extrait…';
   try {
-    const res = await fetch(`/api/preview?artist=${encodeURIComponent(track.artist)}&track=${encodeURIComponent(track.name)}`);
+    const res = await fetch(`api/preview?artist=${encodeURIComponent(track.artist)}&track=${encodeURIComponent(track.name)}`);
     const data = await res.json();
     if (!data.found) {
       cardPlayMsg.textContent = 'Aucun extrait disponible pour ce titre.';

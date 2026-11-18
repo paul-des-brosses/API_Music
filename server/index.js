@@ -119,7 +119,7 @@ app.get("/api/preview", async (req, res) => {
       ) || (data.data || []).find((d) => d.preview);
 
     const result = hit
-      ? { found: true, title: hit.title, artist: hit.artist?.name, audioUrl: `/api/preview-audio?id=${hit.id}` }
+      ? { found: true, title: hit.title, artist: hit.artist?.name, audioUrl: `api/preview-audio?id=${hit.id}` }
       : { found: false };
     if (previewCache.size >= 200) {
       previewCache.delete(previewCache.keys().next().value);
@@ -347,7 +347,7 @@ app.get("/api/recent-tracks", async (req, res) => {
       }
 
       // Route image via local server proxy so browser never touches Last.fm CDN
-      const proxiedImageUrl = imageUrl ? `/api/image-proxy?url=${encodeURIComponent(imageUrl)}` : "";
+      const proxiedImageUrl = imageUrl ? `api/image-proxy?url=${encodeURIComponent(imageUrl)}` : "";
 
       const tags = artistTagsMap.get(artistName.toLowerCase()) || [];
       const classification = classifyTrack(artistName, trackName, tags);
